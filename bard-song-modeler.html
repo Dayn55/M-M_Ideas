@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bard Song Modeler</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root{
+    --bg:#14110f; --panel:#1c1814; --panel2:#241f1a; --line:#3a322a;
+    --ink:#efe6d8; --muted:#a99a86; --faint:#7a6e5e;
+    --gold:#c9a24a; --gold-dim:#8f7333;
+    --dmg:#c8552d; --heal:#3f9d6f; --mana:#4a78c2;
+    --c-brass:#c9a24a; --c-perc:#8a6fd0; --c-wind:#4aa9b8; --c-string:#c0773f; --c-none:#8a7e6c;
+    --break:#d2473f;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f5efe4; --panel:#ffffff; --panel2:#f0e8da; --line:#ddd0bb; --ink:#2b2419; --muted:#6a5e4c; --faint:#9c8e78; --gold:#9a7a28; --gold-dim:#b8923a; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif; line-height:1.5; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1200px; margin:0 auto; padding:26px 20px 60px}
+  header{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; border-bottom:1px solid var(--line); padding-bottom:15px; margin-bottom:20px}
+  h1{font-size:25px; margin:0; letter-spacing:.3px; font-weight:600}
+  .sub{color:var(--muted); font-size:14px; font-style:italic}
+  .grid{display:grid; grid-template-columns:330px 1fr; gap:20px; align-items:start}
+  @media (max-width:900px){ .grid{grid-template-columns:1fr} }
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:15px}
+  .panel h2{font-size:12px; text-transform:uppercase; letter-spacing:1.3px; color:var(--gold); margin:0 0 12px; font-weight:600; font-family:"Trebuchet MS",sans-serif}
+  .field{margin-bottom:12px}
+  .field label{display:flex; justify-content:space-between; font-size:13px; color:var(--muted); margin-bottom:4px; font-family:"Trebuchet MS",sans-serif}
+  .field label .val{color:var(--ink); font-weight:600}
+  select{width:100%; background:var(--panel2); color:var(--ink); border:1px solid var(--line); border-radius:7px; padding:7px 9px; font-size:13px; font-family:"Trebuchet MS",sans-serif; appearance:none; cursor:pointer}
+  input[type=range]{width:100%; -webkit-appearance:none; appearance:none; height:5px; border-radius:4px; background:var(--line); cursor:pointer; margin:7px 0 1px}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:15px; height:15px; border-radius:50%; background:var(--gold); border:2px solid var(--bg); cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:15px; height:15px; border-radius:50%; background:var(--gold); border:2px solid var(--bg); cursor:pointer}
+  select:focus,input:focus{outline:2px solid var(--gold-dim); outline-offset:1px}
+  .hint{font-size:11px; color:var(--faint); margin-top:3px; font-family:"Trebuchet MS",sans-serif}
+  .songslot{display:flex; align-items:center; gap:8px; margin-bottom:7px}
+  .songslot .dot{width:9px; height:9px; border-radius:50%; flex:none; background:var(--faint)}
+  .songslot select{flex:1}
+  .instrow{border:1px solid var(--line); border-radius:9px; padding:10px 11px; margin-bottom:9px; background:var(--panel2)}
+  .instrow .top{display:flex; align-items:center; gap:8px; margin-bottom:7px}
+  .instrow .swatch{width:11px; height:11px; border-radius:3px; flex:none}
+  .instrow .nm{font-size:13.5px; font-weight:600; font-family:"Trebuchet MS",sans-serif; flex:1}
+  .instrow .vis{font-size:11px; color:var(--faint); font-family:"Trebuchet MS",sans-serif; cursor:pointer; user-select:none}
+  .instrow.off{opacity:.45}
+  .minislide{display:flex; align-items:center; gap:8px; margin-bottom:5px}
+  .minislide span{font-size:11px; color:var(--muted); font-family:"Trebuchet MS",sans-serif; min-width:80px}
+  .minislide input{flex:1}
+  .minislide b{font-size:11px; color:var(--ink); min-width:36px; text-align:right; font-family:"Trebuchet MS",sans-serif; font-weight:600}
+  .cmp-table{width:100%; border-collapse:collapse; font-family:"Trebuchet MS",sans-serif; font-size:13px}
+  .cmp-table th{text-align:right; padding:6px 8px; color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.6px; border-bottom:1px solid var(--line)}
+  .cmp-table th:first-child{text-align:left}
+  .cmp-table td{padding:6px 8px; text-align:right; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums}
+  .cmp-table td:first-child{text-align:left; font-weight:600}
+  .cmp-table .sw{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:7px; vertical-align:middle}
+  .chartcard{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px 16px 16px; margin-bottom:16px}
+  .ctitle{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px}
+  .ctitle h3{font-size:14px; margin:0; font-weight:600; font-family:"Trebuchet MS",sans-serif}
+  .seg{display:inline-flex; border:1px solid var(--line); border-radius:7px; overflow:hidden}
+  .seg button{background:transparent; color:var(--muted); border:0; padding:5px 11px; font-size:12px; cursor:pointer; font-family:"Trebuchet MS",sans-serif}
+  .seg button.on{background:var(--gold); color:#1a1408; font-weight:600}
+  .chart-host{position:relative; width:100%; height:320px}
+  .legend{display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-bottom:8px; font-family:"Trebuchet MS",sans-serif}
+  .legend span{display:flex; align-items:center; gap:5px; cursor:pointer}
+  .legend i{width:14px; height:3px; border-radius:2px; display:inline-block}
+  .legend span.off{opacity:.4; text-decoration:line-through}
+  .log{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px 16px}
+  .log h3{font-size:13px; text-transform:uppercase; letter-spacing:1.1px; color:var(--gold); margin:0 0 10px; font-weight:600; font-family:"Trebuchet MS",sans-serif}
+  .events{display:flex; flex-direction:column; gap:5px; max-height:200px; overflow:auto; font-family:"Trebuchet MS",sans-serif; font-size:12.5px}
+  .ev{display:flex; align-items:center; gap:9px; padding:4px 8px; border-radius:6px; background:var(--panel2)}
+  .ev .t{color:var(--faint); font-variant-numeric:tabular-nums; min-width:40px; font-size:12px}
+  .ev .pip{width:8px; height:8px; border-radius:50%; flex:none}
+  .ev.break .pip{background:var(--break)} .ev.drop .pip{background:#d98a2b} .ev.end .pip{background:var(--muted)} .ev.start .pip{background:var(--heal)}
+  .ev.break{color:var(--break)} .ev.drop{color:#d98a2b}
+  .note{font-size:12px; color:var(--faint); margin-top:14px; line-height:1.6; font-family:"Trebuchet MS",sans-serif}
+  .pill{display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-family:"Trebuchet MS",sans-serif; border:1px solid var(--line); color:var(--muted)}
+  .pill.ded{border-color:var(--c-brass); color:var(--c-brass)} .pill.twist{border-color:var(--c-perc); color:var(--c-perc)}
+  /* gantt */
+  .gantt-wrap{position:relative; width:100%; overflow-x:hidden}
+  #tooltip{position:fixed; pointer-events:none; z-index:50; background:var(--panel); border:1px solid var(--gold-dim); border-radius:8px; padding:8px 10px; font-family:"Trebuchet MS",sans-serif; font-size:12px; color:var(--ink); box-shadow:0 4px 16px rgba(0,0,0,.4); display:none; max-width:240px}
+  #tooltip .ti{font-weight:600; margin-bottom:3px}
+  #tooltip .tr{display:flex; justify-content:space-between; gap:14px; color:var(--muted)}
+  #tooltip .tr b{color:var(--ink)}
+  .glyphrow{display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap}
+  .glyph{display:flex; align-items:center; gap:5px; padding:3px 8px; border:1px solid var(--line); border-radius:7px; font-size:11px; font-family:"Trebuchet MS",sans-serif; color:var(--muted)}
+  .glyph svg{flex:none}
+</style>
+</head>
+<body>
+<div id="tooltip"></div>
+<div class="wrap">
+  <header>
+    <h1>Bard Song Modeler</h1>
+    <span class="sub">attunement + resonance sandbox · drop modeling · Monsters &amp; Memories Bard proposal</span>
+  </header>
+  <div class="grid">
+    <div>
+      <div class="panel">
+        <h2>Performance</h2>
+        <div class="field"><label>Level <span class="val" id="lvlVal">40</span></label><input type="range" id="lvl" min="1" max="60" value="40"></div>
+        <div class="field"><label>Combat window <span class="val" id="winVal">60s</span></label><input type="range" id="win" min="18" max="180" value="60" step="6"></div>
+        <div class="field"><label>Starting attunement <span class="val" id="saVal">max</span></label><input type="range" id="sa" min="0" max="100" value="100" step="5"><div class="hint">% of each instrument's cap you begin with. Set to max to model an already-warmed-up 30s fight.</div></div>
+        <div class="field"><label>Cast cadence <span class="val">3s base · ticks 6s</span></label><div class="hint">Wind casts faster and String lasts longer, both scaling with attunement.</div></div>
+      </div>
+      <div class="panel" style="margin-top:14px">
+        <h2>Song rotation <span id="modeTag" class="pill"></span></h2>
+        <div id="slots"></div>
+        <div class="hint" style="margin-top:5px">7 songs can't all be held at 3s cadence (21s cycle &gt; 18s duration) — most instruments drop songs and reset resonance. Wind/String can keep up once attuned.</div>
+      </div>
+      <div class="panel" style="margin-top:14px">
+        <h2>Instruments <span class="pill" style="border-color:var(--gold-dim);color:var(--muted)">all shown</span></h2>
+        <div id="instConfig"></div>
+        <div class="hint" style="margin-top:4px">Click a name to hide it. Wind faster-cast and String longer-duration both scale by current attunement.</div>
+      </div>
+    </div>
+    <div>
+      <div class="chartcard">
+        <div class="ctitle">
+          <h3>Cumulative delivery — all instruments</h3>
+          <div class="seg" id="metricSeg">
+            <button data-m="cum" class="on">Combined</button><button data-m="damage">Damage</button><button data-m="health">Healing</button><button data-m="mana">Mana</button>
+          </div>
+        </div>
+        <div class="legend" id="legend1"></div>
+        <div class="chart-host"><canvas id="chartCum"></canvas></div>
+      </div>
+
+      <div class="chartcard">
+        <div class="ctitle"><h3>Cast timeline — <span id="ganttInstName">Brass</span></h3><select id="ganttInst" style="width:auto"></select></div>
+        <div class="glyphrow" id="glyphs"></div>
+        <div class="gantt-wrap"><svg id="gantt" width="100%" preserveAspectRatio="none"></svg></div>
+        <div class="hint" style="margin-top:6px">Each bar is one song held from cast to fall-off; gaps are drops (resonance resets). Hover a bar for its resonance and the value of its next tick. Vertical gold ticks are the 6s heartbeats.</div>
+      </div>
+
+      <div class="chartcard">
+        <div class="ctitle"><h3>Per-song bonus over time (attunement + resonance)</h3><select id="bonusInst" style="width:auto"></select></div>
+        <div class="chart-host" style="height:230px"><canvas id="chartBonus"></canvas></div>
+      </div>
+
+      <div class="chartcard">
+        <div class="ctitle"><h3>Totals at <span id="winEcho">60</span>s</h3></div>
+        <table class="cmp-table" id="cmpTable"></table>
+      </div>
+
+      <div class="log"><h3>Event timeline</h3><div class="events" id="events"></div></div>
+      <div class="note" id="modelNote"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SONGS = {
+  "Dissonant Riffs":{type:"damage",dur:18,bp:[[2,2],[60,20]]},
+  "Disruptive Riffs":{type:"damage",dur:18,bp:[[8,4],[60,20]]},
+  "Discordant Riffs":{type:"damage",dur:18,bp:[[16,8],[60,20]]},
+  "Despondent Riffs":{type:"damage",dur:18,bp:[[32,12],[60,20]]},
+  "Dismal Riffs":{type:"damage",dur:18,bp:[[40,20],[60,30]]},
+  "Healing Hymn":{type:"health",dur:18,bp:[[1,2],[60,20]]},
+  "Hymn of Inspiration":{type:"mana",dur:18,bp:[[8,1],[60,15]]},
+  "Beats of War (stats)":{type:"buff",dur:18,bp:[[1,2],[16,4]]},
+  "Traveler's March (move%)":{type:"buff",dur:18,bp:[[5,25],[60,75]]},
+  "Allegro Moderato (atk%)":{type:"buff",dur:18,bp:[[28,25],[32,35]]},
+  "Allegro Assai (atk%)":{type:"buff",dur:18,bp:[[44,40],[48,50]]},
+  "Siren's Call (charm)":{type:"charm",dur:18,breakChance:0.08},
+  "Siren's Allure (charm)":{type:"charm",dur:18,breakChance:0.05},
+  "Siren's Compulsion (charm)":{type:"charm",dur:18,breakChance:0.03},
+  "Siren's Thrall (charm)":{type:"charm",dur:18,breakChance:0.02},
+  "Somniferous Serenade (mez)":{type:"cc",dur:18,label:"Mez"},
+  "Aria de Lento (slow)":{type:"cc",dur:18,label:"Slow"},
+};
+const TYPE_COLOR={damage:"#c8552d",health:"#3f9d6f",mana:"#4a78c2",buff:"#c9a24a",charm:"#b85cc0",cc:"#7a8aa0"};
+const INST={
+  Brass:{color:"#c9a24a",aCap:20,rCap:35,resMode:"linear",mod:3.0,kickCast1:true,pulse:0,windScale:false,stringScale:false,on:true,desc:"constant advancement + high cap"},
+  Percussion:{color:"#8a6fd0",aCap:15,rCap:25,resMode:"hyper",mod:0,kickCast1:false,pulse:5,windScale:false,stringScale:false,on:true,desc:"off-beat pulse every refresh"},
+  Wind:{color:"#4aa9b8",aCap:15,rCap:25,resMode:"hyper",mod:0,kickCast1:false,pulse:0,windScale:true,stringScale:false,on:true,desc:"casts faster by attunement% — fits one more cast/tick at full attune"},
+  String:{color:"#c0773f",aCap:17,rCap:25,resMode:"hyper",mod:0,kickCast1:false,pulse:0,windScale:false,stringScale:true,on:true,desc:"lasts longer by attunement% — holds one more song at full attune"},
+  None:{color:"#8a7e6c",aCap:0,rCap:0,resMode:"hyper",mod:0,kickCast1:false,pulse:0,windScale:false,stringScale:false,on:true,desc:"singing only — baseline"},
+};
+const BASE_CAD=3, K_ATTUNE=4, K_RES=2.5, EPS=1e-6;
+function hyp(n,k){return (k+n)>0?n/(k+n):0;}
+function lerp(bp,L){const[[l1,v1],[l2,v2]]=bp;if(L<=l1)return v1;if(L>=l2)return v2;return v1+(v2-v1)*(L-l1)/(l2-l1);}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+function fmt(n){return Math.round(n).toLocaleString();}
+function maxSongsAtCap(P){const a=P.aCap/100;const cad=P.windScale?BASE_CAD*(1-a):BASE_CAD;const dur=P.stringScale?18*(1+a):18;return Math.floor(dur/cad+1e-9);}
+
+function resBonus(P,A,stack){
+  const rCap=P.rCap/100, mod=P.mod/100;
+  if(stack<=0) return 0;
+  if(P.resMode==="linear") return Math.max(0,Math.min(rCap-A, mod*stack));
+  const steps=P.kickCast1?stack:(stack-1);
+  return Math.max(0,(rCap-A)*hyp(Math.max(0,steps),K_RES));
+}
+
+function simulate(P,cfg){
+  const sel=cfg.songs.filter(Boolean).map(n=>({name:n,...SONGS[n]}));
+  const aCap=P.aCap/100, pulse=P.pulse/100;
+  const startFrac=cfg.startAttune/100;
+  let c0=0; if(aCap>0 && startFrac>0){ c0 = startFrac<0.999 ? K_ATTUNE*startFrac/(1-startFrac) : 5000; }
+  const rng=mulberry32(hash(cfg.songs.join("|")+cfg.lvl+cfg.win));
+  const uniq=[...new Set(sel.map(s=>s.name))];
+
+  // 1) cast schedule (dynamic cadence for Wind)
+  const casts=[]; let t=0, ci=0;
+  while(t<=cfg.win && sel.length){
+    const cA=casts.length+c0;
+    const A=aCap>0?aCap*hyp(cA,K_ATTUNE):0;
+    casts.push({time:+t.toFixed(3),song:sel[ci%sel.length].name,A});
+    let cad=P.windScale?BASE_CAD*(1-A):BASE_CAD;
+    t+=Math.max(0.5,cad); ci++;
+  }
+  const castTimes=casts.map(c=>c.time);
+  const Aat=(h)=>{ if(aCap<=0)return 0; const c=castTimes.filter(ct=>ct<=h+EPS).length+c0; return aCap*hyp(c,K_ATTUNE); };
+
+  // 2) per-song applications: duration (String scales) + resonance stack (reset on drop)
+  const apps={}; uniq.forEach(n=>apps[n]=[]);
+  const bySong={}; uniq.forEach(n=>bySong[n]=[]);
+  casts.forEach(c=>bySong[c.song].push(c));
+  const events=[];
+  uniq.forEach(name=>{
+    const baseDur=SONGS[name].dur; let stack=0, prevEnd=-1e9, first=true;
+    bySong[name].forEach(c=>{
+      const dur=P.stringScale?baseDur*(1+c.A):baseDur;
+      if(c.time>prevEnd+EPS){ if(!first) events.push({t:Math.round(prevEnd),kind:'drop',song:name}); stack=1; }
+      else stack++;
+      const bonus=c.A+resBonus(P,c.A,stack);
+      const base=lerp(SONGS[name].bp||[[1,0],[60,0]],cfg.lvl);
+      apps[name].push({time:c.time,end:c.time+dur,A:c.A,dur,stack,bonus,value:base*(1+bonus)});
+      prevEnd=c.time+dur; first=false;
+    });
+  });
+
+  // 3) ticks on global heartbeat
+  const ticks=[]; for(let h=6;h<=cfg.win;h+=6) ticks.push(h);
+  const cumT={damage:0,health:0,mana:0,buff:0};
+  const pts=[{t:0,cum:0,damage:0,health:0,mana:0}];
+  const bonusSeries=[]; const charm={};
+  let trackSong=null; sel.forEach(s=>{ if(['damage','health','mana'].includes(s.type)&&!trackSong)trackSong=s.name; if(s.type==='charm')charm[s.name]={up:0,breaks:0}; });
+  uniq.forEach(n=>events.push({t:0,kind:'start',song:n}));
+  ticks.forEach(h=>{
+    const A=Aat(h); let trackBonus=A;
+    uniq.forEach(name=>{
+      const aps=apps[name].filter(a=>a.time<=h+EPS && a.end>=h-EPS);
+      if(!aps.length) return;
+      const cov=aps[aps.length-1];
+      const s=SONGS[name]; const base=lerp(s.bp||[[1,0],[60,0]],cfg.lvl);
+      const bonus=A+resBonus(P,A,cov.stack);
+      if(['damage','health','mana','buff'].includes(s.type)){
+        cumT[s.type]+=base*(1+bonus);
+        if(pulse>0){ const np=bySong[name].filter(c=>c.time>h-6+EPS && c.time<=h+EPS).length; cumT[s.type]+=base*pulse*np; }
+      }
+      if(name===trackSong) trackBonus=bonus;
+      if(s.type==='charm'){ charm[name].up+=6; if(rng()<s.breakChance){events.push({t:h,kind:'break',song:name}); charm[name].breaks++;} }
+    });
+    const cum=cumT.damage+cumT.health+cumT.mana+cumT.buff;
+    pts.push({t:h,cum,damage:cumT.damage,health:cumT.health,mana:cumT.mana});
+    bonusSeries.push({t:h,bonus:trackBonus,attune:A});
+  });
+  uniq.forEach(n=>events.push({t:cfg.win,kind:'end',song:n}));
+  const dedicating=uniq.length===1&&sel.length>0;
+  return {pts,bonusSeries,events,totals:{...cumT,cum:cumT.damage+cumT.health+cumT.mana+cumT.buff,charm},apps,uniq,casts,dedicating,trackSong};
+}
+
+const SONG_NAMES=Object.keys(SONGS);
+const state={lvl:40,win:60,startAttune:100,metric:"cum",bonusInst:"Brass",ganttInst:"Brass",
+  songs:["Dismal Riffs","Discordant Riffs","Despondent Riffs","Disruptive Riffs","Dissonant Riffs","Healing Hymn","Hymn of Inspiration"]};
+
+function buildSlots(){
+  const host=document.getElementById('slots');host.innerHTML='';
+  for(let i=0;i<7;i++){
+    const row=document.createElement('div');row.className='songslot';
+    const dot=document.createElement('span');dot.className='dot';
+    const sel=document.createElement('select');
+    sel.innerHTML='<option value="">— empty —</option>'+SONG_NAMES.map(n=>`<option ${state.songs[i]===n?'selected':''} value="${n}">${n}</option>`).join('');
+    const cur=state.songs[i];if(cur&&SONGS[cur])dot.style.background=TYPE_COLOR[SONGS[cur].type]||'var(--faint)';
+    sel.addEventListener('change',e=>{state.songs[i]=e.target.value;const s=SONGS[e.target.value];dot.style.background=s?(TYPE_COLOR[s.type]||'var(--faint)'):'var(--faint)';render();});
+    row.appendChild(dot);row.appendChild(sel);host.appendChild(row);
+  }
+}
+function mini(name,key,label,val,unit,min,max,step){return `<div class="minislide"><span>${label}</span><input type="range" data-name="${name}" data-key="${key}" min="${min}" max="${max}" step="${step}" value="${val}"><b>${val}${unit}</b></div>`;}
+function buildInstConfig(){
+  const host=document.getElementById('instConfig');host.innerHTML='';
+  Object.keys(INST).forEach(name=>{
+    const P=INST[name];const isBrass=name==='Brass',isPerc=name==='Percussion',isNone=name==='None';
+    let extra='';
+    if(isBrass)extra=mini(name,'mod','advance/cast',P.mod,'%',0,6,0.5);
+    if(isPerc)extra=mini(name,'pulse','pulse/refresh',P.pulse,'%',0,20,1);
+    const row=document.createElement('div');row.className='instrow'+(P.on?'':' off');
+    row.innerHTML=`<div class="top"><span class="swatch" style="background:${P.color}"></span><span class="nm">${name}</span><span class="vis" data-vis="${name}">${P.on?'hide':'show'}</span></div>
+      <div class="cfg" style="${P.on?'':'display:none'}"><div style="font-size:11px;color:var(--faint);margin-bottom:4px;font-family:'Trebuchet MS',sans-serif">${P.desc}</div>
+      <div id="holds-${name}" style="font-size:11px;color:var(--gold-dim);margin-bottom:6px;font-family:'Trebuchet MS',sans-serif"></div>
+      ${isNone?'':mini(name,'aCap','attune cap',P.aCap,'%',0,40,1)}${isNone?'':mini(name,'rCap','resonance cap',P.rCap,'%',0,50,1)}${extra}</div>`;
+    host.appendChild(row);
+  });
+  host.querySelectorAll('input[type=range]').forEach(inp=>inp.addEventListener('input',e=>{const{name,key}=e.target.dataset;INST[name][key]=+e.target.value;e.target.nextElementSibling.textContent=(+e.target.value)+'%';render();}));
+  host.querySelectorAll('[data-vis]').forEach(el=>el.addEventListener('click',()=>{INST[el.dataset.vis].on=!INST[el.dataset.vis].on;buildInstConfig();render();}));
+}
+
+let chartCum=null,chartBonus=null;
+const vlines={id:'vlines',afterDraw(c,a,o){const L=o.lines||[];const{ctx,chartArea:{top,bottom},scales:{x}}=c;L.forEach(l=>{const px=x.getPixelForValue(l.t);if(px<x.left||px>x.right)return;ctx.save();ctx.beginPath();ctx.moveTo(px,top);ctx.lineTo(px,bottom);ctx.lineWidth=1.3;ctx.setLineDash([4,3]);ctx.strokeStyle=l.color;ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=l.color;ctx.font='10px "Trebuchet MS",sans-serif';ctx.textAlign='center';ctx.fillText(l.label,px,top+9);ctx.restore();});}};
+Chart.register(vlines);
+
+// instrument glyphs (simple outlines)
+const GLYPH={
+  Brass:'<svg width="20" height="16" viewBox="0 0 20 16"><path d="M2 8h7M9 4a4 4 0 0 1 0 8M14 5v6M16.5 5v6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+  Percussion:'<svg width="20" height="16" viewBox="0 0 20 16"><ellipse cx="10" cy="5" rx="7" ry="2.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3 5v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>',
+  Wind:'<svg width="20" height="16" viewBox="0 0 20 16"><path d="M3 8h14M6 8v-.5M9 8v-.5M12 8v-.5M15 8v-.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+  String:'<svg width="20" height="16" viewBox="0 0 20 16"><ellipse cx="8" cy="9" rx="5" ry="5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M11.5 6.5 17 2M13 5l2 .5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+  None:'<svg width="20" height="16" viewBox="0 0 20 16"><path d="M6 4v7a2.5 2.5 0 1 1-1.5-2.3V4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>',
+};
+
+function drawGantt(res, P){
+  const svg=document.getElementById('gantt');
+  const W=svg.clientWidth||760;
+  const rows=res.uniq;
+  const rowH=22, padT=18, padB=8, padL=4, padR=4;
+  const H=padT+rows.length*rowH+padB;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('height',H);
+  const win=state.win; const x=s=>padL+(s/win)*(W-padL-padR);
+  let s='';
+  // heartbeat gridlines
+  for(let h=0;h<=win;h+=6){ const px=x(h); s+=`<line x1="${px}" y1="${padT-6}" x2="${px}" y2="${H-padB}" stroke="rgba(201,162,74,.18)" stroke-width="1"/>`; if(h%12===0)s+=`<text x="${px+2}" y="${padT-8}" fill="var(--faint)" font-size="9" font-family="Trebuchet MS">${h}s</text>`; }
+  rows.forEach((name,ri)=>{
+    const y=padT+ri*rowH+2; const col=TYPE_COLOR[SONGS[name].type]||'#888';
+    s+=`<text x="${padL}" y="${y+13}" fill="var(--muted)" font-size="10" font-family="Trebuchet MS">${name.replace(/ \(.*\)/,'')}</text>`;
+    res.apps[name].forEach((a,ai)=>{
+      const x1=x(a.time), x2=x(Math.min(a.end,win)); const w=Math.max(2,x2-x1);
+      const op=0.35+0.55*Math.min(1,a.bonus/ (P.rCap/100||0.35)); // brighter = higher resonance
+      s+=`<rect x="${x1}" y="${y+5}" width="${w}" height="${rowH-12}" rx="2" fill="${col}" fill-opacity="${op.toFixed(2)}" stroke="${col}" stroke-width="0.6"
+            data-song="${name}" data-t="${a.time.toFixed(1)}" data-stack="${a.stack}" data-bonus="${(a.bonus*100).toFixed(1)}" data-val="${a.value.toFixed(1)}" data-type="${SONGS[name].type}" class="gbar"/>`;
+      // cast tick
+      s+=`<line x1="${x1}" y1="${y+2}" x2="${x1}" y2="${y+rowH-4}" stroke="${col}" stroke-width="1.1"/>`;
+    });
+  });
+  svg.innerHTML=s;
+  // hover
+  const tip=document.getElementById('tooltip');
+  svg.querySelectorAll('.gbar').forEach(r=>{
+    r.addEventListener('mousemove',e=>{
+      const d=r.dataset; const unit=d.type==='damage'?'dmg':d.type==='health'?'heal':d.type==='mana'?'mana':'value';
+      tip.innerHTML=`<div class="ti">${d.song}</div>
+        <div class="tr">cast at <b>${d.t}s</b></div>
+        <div class="tr">resonance stack <b>${d.stack}</b></div>
+        <div class="tr">bonus <b>${d.bonus}%</b></div>
+        <div class="tr">next tick <b>${d.val} ${unit}</b></div>`;
+      tip.style.display='block'; tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY+14)+'px';
+    });
+    r.addEventListener('mouseleave',()=>{tip.style.display='none';});
+  });
+}
+
+function render(){
+  document.getElementById('lvlVal').textContent=state.lvl;
+  document.getElementById('winVal').textContent=state.win+'s';
+  document.getElementById('winEcho').textContent=state.win;
+  document.getElementById('saVal').textContent=state.startAttune>=100?'max':state.startAttune+'%';
+  document.getElementById('ganttInstName').textContent=state.ganttInst;
+  Object.keys(INST).forEach(n=>{const el=document.getElementById('holds-'+n);if(el){const ms=maxSongsAtCap(INST[n]);el.textContent='holds ~'+ms+' song'+(ms===1?'':'s')+' at full attune';}});
+  const cfg={lvl:state.lvl,win:state.win,startAttune:state.startAttune,songs:state.songs};
+  const results={};Object.keys(INST).forEach(n=>results[n]=simulate(INST[n],cfg));
+  const ref=results.Brass;
+
+  const tag=document.getElementById('modeTag');
+  const nUniq=[...new Set(state.songs.filter(Boolean))].length;
+  tag.textContent=ref.dedicating?'dedication':(nUniq>1?nUniq+'-song twist':'idle');
+  tag.className='pill '+(ref.dedicating?'ded':'twist');
+
+  const leg=document.getElementById('legend1');
+  leg.innerHTML=Object.keys(INST).map(n=>`<span class="${INST[n].on?'':'off'}" data-leg="${n}"><i style="background:${INST[n].color}"></i>${n}</span>`).join('');
+  leg.querySelectorAll('[data-leg]').forEach(el=>el.addEventListener('click',()=>{INST[el.dataset.leg].on=!INST[el.dataset.leg].on;buildInstConfig();render();}));
+
+  const m=state.metric;const labels=ref.pts.map(p=>p.t);
+  const datasets=Object.keys(INST).filter(n=>INST[n].on).map(n=>({label:n,data:results[n].pts.map(p=>p[m]),borderColor:INST[n].color,backgroundColor:INST[n].color,borderWidth:n==='None'?1.6:2.4,borderDash:n==='None'?[3,3]:[],tension:.18,pointRadius:0,pointHoverRadius:4,fill:false}));
+  const breakLines=ref.events.filter(e=>e.kind==='break').map(e=>({t:e.t,color:'#d2473f',label:'break'}));
+  const cumOpts={responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>i[0].label+'s',label:c=>`${c.dataset.label}: ${fmt(c.parsed.y)}`}},vlines:{lines:breakLines}},scales:{x:{title:{display:true,text:'seconds',color:'#a99a86'},ticks:{color:'#a99a86'},grid:{color:'rgba(128,116,96,.13)'}},y:{title:{display:true,text:m==='cum'?'cumulative units':'cumulative '+m,color:'#a99a86'},min:0,ticks:{color:'#a99a86'},grid:{color:'rgba(128,116,96,.13)'}}}};
+  if(chartCum){chartCum.data={labels,datasets};chartCum.options=cumOpts;chartCum.update();}else chartCum=new Chart(document.getElementById('chartCum'),{type:'line',data:{labels,datasets},options:cumOpts});
+
+  // gantt
+  drawGantt(results[state.ganttInst], INST[state.ganttInst]);
+  document.getElementById('glyphs').innerHTML=Object.keys(GLYPH).map(n=>`<span class="glyph" style="color:${INST[n].color}">${GLYPH[n]}<span style="color:var(--muted)">${n}</span></span>`).join('');
+
+  // bonus chart
+  const bi=state.bonusInst;const bres=results[bi];const bl=bres.bonusSeries.map(b=>b.t);
+  const bd={type:'line',data:{labels:bl,datasets:[{label:'total bonus',data:bres.bonusSeries.map(b=>+(b.bonus*100).toFixed(1)),borderColor:INST[bi].color,backgroundColor:INST[bi].color+'22',borderWidth:2.4,tension:.15,pointRadius:0,fill:true},{label:'attunement floor',data:bres.bonusSeries.map(b=>+(b.attune*100).toFixed(1)),borderColor:'#a99a86',borderDash:[5,4],borderWidth:1.6,tension:.15,pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:true,labels:{color:'#a99a86',font:{family:'Trebuchet MS',size:11},boxWidth:12}},tooltip:{callbacks:{title:i=>i[0].label+'s',label:c=>`${c.dataset.label}: ${c.parsed.y}%`}}},scales:{x:{ticks:{color:'#a99a86'},grid:{color:'rgba(128,116,96,.13)'}},y:{title:{display:true,text:'% bonus on tracked song',color:'#a99a86'},min:0,ticks:{color:'#a99a86',callback:v=>v+'%'},grid:{color:'rgba(128,116,96,.13)'}}}}};
+  if(chartBonus){chartBonus.data=bd.data;chartBonus.options=bd.options;chartBonus.update();}else chartBonus=new Chart(document.getElementById('chartBonus'),bd);
+
+  // table
+  const types=[['damage','Damage'],['health','Healing'],['mana','Mana']];
+  const present=types.filter(([k])=>ref.totals[k]>0);
+  let head='<tr><th>Instrument</th><th>Total</th>'+present.map(([,l])=>`<th>${l}</th>`).join('')+'<th>Drops</th></tr>';
+  let body=Object.keys(INST).map(n=>{const T=results[n].totals;const drops=results[n].events.filter(e=>e.kind==='drop').length;return `<tr><td><span class="sw" style="background:${INST[n].color}"></span>${n}${INST[n].on?'':' <span style="color:var(--faint);font-weight:400">(hidden)</span>'}</td><td>${fmt(T.cum)}</td>`+present.map(([k])=>`<td>${fmt(T[k])}</td>`).join('')+`<td>${drops}</td></tr>`;}).join('');
+  document.getElementById('cmpTable').innerHTML=head+body;
+
+  // events (use selected gantt instrument's events so drops match)
+  const gres=results[state.ganttInst];
+  const order={start:0,drop:1,break:1,end:2};
+  const evs=[...gres.events].sort((a,b)=>a.t-b.t||order[a.kind]-order[b.kind]);
+  const lab={start:'begins',drop:'DROPS (resonance resets)',break:'CHARM BREAKS',end:'ends'};
+  document.getElementById('events').innerHTML=evs.slice(0,60).map(e=>`<div class="ev ${e.kind}"><span class="pip"></span><span class="t">${e.t}s</span><span>${e.song} — ${lab[e.kind]}</span></div>`).join('');
+
+  ['bonusInst','ganttInst'].forEach(id=>{const s=document.getElementById(id);if(s.options.length===0){s.innerHTML=Object.keys(INST).map(n=>`<option value="${n}">${n}</option>`).join('');s.value=state[id];}});
+
+  document.getElementById('modelNote').innerHTML=`<b style="color:var(--gold)">Attunement</b> rises with every cast (any song) toward each instrument's cap (dashed floor), and now drives Wind's cast speed and String's duration. <b style="color:var(--gold)">Resonance</b> builds per song while held and <b>resets when a song drops</b>. At 3s cadence a 7-song rotation cycles every 21s but songs only last 18s — most instruments drop and reset; Wind (faster casts) and String (longer duration) close the gap once attunement is high. Set starting attunement to max to skip the warm-up. Bar brightness in the timeline tracks resonance; hover for the next tick's value.`;
+}
+
+document.getElementById('lvl').addEventListener('input',e=>{state.lvl=+e.target.value;render();});
+document.getElementById('win').addEventListener('input',e=>{state.win=+e.target.value;render();});
+document.getElementById('sa').addEventListener('input',e=>{state.startAttune=+e.target.value;render();});
+document.querySelectorAll('#metricSeg button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#metricSeg button').forEach(x=>x.classList.remove('on'));b.classList.add('on');state.metric=b.dataset.m;render();}));
+document.getElementById('bonusInst').addEventListener('change',e=>{state.bonusInst=e.target.value;render();});
+document.getElementById('ganttInst').addEventListener('change',e=>{state.ganttInst=e.target.value;render();});
+window.addEventListener('resize',()=>{clearTimeout(window._rz);window._rz=setTimeout(render,150);});
+buildSlots();buildInstConfig();render();
+</script>
+</body>
+</html>
