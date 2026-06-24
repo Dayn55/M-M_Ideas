@@ -20,8 +20,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bard Song Modeler</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<style>
-  :root{
+:root{
     --bg:#14110f; --panel:#1c1814; --panel2:#241f1a; --line:#3a322a;
     --ink:#efe6d8; --muted:#a99a86; --faint:#7a6e5e;
     --gold:#c9a24a; --gold-dim:#8f7333;
@@ -188,7 +187,7 @@ const SONGS = {
 const TYPE_COLOR={damage:"#c8552d",health:"#3f9d6f",mana:"#4a78c2",buff:"#c9a24a",charm:"#b85cc0",cc:"#7a8aa0"};
 const INST={
   Brass:{color:"#c9a24a",aCap:20,rCap:35,resMode:"linear",mod:3.0,kickCast1:true,pulse:0,windScale:false,stringScale:false,on:true,desc:"constant advancement + high cap"},
-  Percussion:{color:"#8a6fd0",aCap:15,rCap:25,resMode:"hyper",mod:0,kickCast1:false,pulse:5,windScale:false,stringScale:false,on:true,desc:"off-beat pulse every refresh"},
+  Percussion:{color:"#8a6fd0",aCap:15,rCap:25,resMode:"hyper",mod:0,kickCast1:false,pulse:20,windScale:false,stringScale:false,on:true,desc:"off-beat pulse every refresh"},
   Wind:{color:"#4aa9b8",aCap:15,rCap:25,resMode:"hyper",mod:0,kickCast1:false,pulse:0,windScale:true,stringScale:false,on:true,desc:"casts faster by attunement% — fits one more cast/tick at full attune"},
   String:{color:"#c0773f",aCap:17,rCap:25,resMode:"hyper",mod:0,kickCast1:false,pulse:0,windScale:false,stringScale:true,on:true,desc:"lasts longer by attunement% — holds one more song at full attune"},
   None:{color:"#8a7e6c",aCap:0,rCap:0,resMode:"hyper",mod:0,kickCast1:false,pulse:0,windScale:false,stringScale:false,on:true,desc:"singing only — baseline"},
@@ -301,7 +300,7 @@ function buildInstConfig(){
     const P=INST[name];const isBrass=name==='Brass',isPerc=name==='Percussion',isNone=name==='None';
     let extra='';
     if(isBrass)extra=mini(name,'mod','advance/cast',P.mod,'%',0,6,0.5);
-    if(isPerc)extra=mini(name,'pulse','pulse/refresh',P.pulse,'%',0,20,1);
+    if(isPerc)extra=mini(name,'pulse','pulse/refresh',P.pulse,'%',0,50,1);
     const row=document.createElement('div');row.className='instrow'+(P.on?'':' off');
     row.innerHTML=`<div class="top"><span class="swatch" style="background:${P.color}"></span><span class="nm">${name}</span><span class="vis" data-vis="${name}">${P.on?'hide':'show'}</span></div>
       <div class="cfg" style="${P.on?'':'display:none'}"><div style="font-size:11px;color:var(--faint);margin-bottom:4px;font-family:'Trebuchet MS',sans-serif">${P.desc}</div>
