@@ -6,19 +6,19 @@
 <title>Re-strung · A Bard Instrument Redesign — Monsters &amp; Memories</title>
 <meta name="description" content="Attunement, Resonance, and the game tick: a depth-of-choice redesign for the Monsters & Memories Bard, with an interactive model.">
 <meta property="og:type" content="website">
-  <meta property="og:title" content="M&M Ideas">
-  <meta property="og:description" content="A collection of creative M&M concepts.">
-  <meta property="og:image" content="https://dayn55.github.io/M-M_Ideas/preview.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:url" content="https://dayn55.github.io/M-M_Ideas/">
-  <meta property="og:site_name" content="M&M Ideas">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="theme-color" content="#14110f">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+<meta property="og:title" content="M&amp;M Ideas">
+<meta property="og:description" content="A collection of creative M&amp;M concepts.">
+<meta property="og:image" content="https://dayn55.github.io/M-M_Ideas/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://dayn55.github.io/M-M_Ideas/">
+<meta property="og:site_name" content="M&amp;M Ideas">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#14110f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<<style>
+<style>
   :root{
     --ink:#15120e; --panel:#1d1813; --panel2:#241e16; --line:#3a3024;
     --parch:#ece0cd; --muted:#a8967c; --faint:#796a55;
@@ -54,10 +54,15 @@
   /* ---------- HEARTBEAT RULER (signature) ---------- */
   .ruler{position:relative; margin:40px 0 6px; overflow:hidden}
   .ruler svg{display:block; width:100%; height:auto}
-  .sweep{position:absolute; top:0; bottom:0; width:120px; pointer-events:none;
-    background:linear-gradient(90deg, transparent, rgba(208,166,79,.16)55%, rgba(208,166,79,.42) 82%, transparent);
-    transform:translateX(-160px); animation:sweep 5.2s linear infinite; mix-blend-mode:screen}
-  @keyframes sweep{ 0%{transform:translateX(-160px)} 100%{transform:translateX(calc(100% + 160px))} }
+  /* soft gradient sweep, position driven by JS (transform) */
+  .sweep{position:absolute; top:0; bottom:0; width:130px; left:0; pointer-events:none;
+    background:linear-gradient(90deg, transparent, rgba(208,166,79,.16) 55%, rgba(208,166,79,.46) 82%, transparent);
+    mix-blend-mode:screen; will-change:transform}
+  .beat-dot{transition:none}
+  .beat-dot.lit{animation:beatflare .55s ease-out}
+  @keyframes beatflare{ 0%{r:7; opacity:1} 100%{r:2.6; opacity:.9} }
+  .beat-ring{transform-box:fill-box; transform-origin:center; animation:beatring .6s ease-out forwards; pointer-events:none}
+  @keyframes beatring{ from{transform:scale(.4); opacity:.7} to{transform:scale(3.2); opacity:0} }
   .ruler-cap{display:flex; justify-content:space-between; gap:18px; margin-top:6px; color:var(--faint); font-size:12.5px}
   .ruler-cap b{color:var(--muted); font-weight:500}
 
@@ -138,7 +143,7 @@
   footer{padding:48px 0 70px; color:var(--faint); font-size:14px}
   footer .mono{color:var(--muted)}
 
-  @media (prefers-reduced-motion: reduce){ .sweep{animation:none; opacity:.5; transform:translateX(40%)} }
+  @media (prefers-reduced-motion: reduce){ .sweep{display:none} .beat-dot.lit{animation:none} .beat-ring{display:none} }
 </style>
 </head>
 <body>
@@ -165,7 +170,8 @@
           <line x1="415" y1="50" x2="415" y2="64"/><line x1="565" y1="50" x2="565" y2="64"/>
           <line x1="715" y1="50" x2="715" y2="64"/><line x1="865" y1="50" x2="865" y2="64"/>
         </g>
-        <g fill="var(--gold)" opacity="0.9"><circle cx="40" cy="34" r="2.6"/><circle cx="190" cy="34" r="2.6"/><circle cx="340" cy="34" r="2.6"/><circle cx="490" cy="34" r="2.6"/><circle cx="640" cy="34" r="2.6"/><circle cx="790" cy="34" r="2.6"/><circle cx="940" cy="34" r="2.6"/></g>
+        <g fill="var(--gold)" opacity="0.9"><circle class="beat-dot" cx="40" cy="34" r="2.6"/><circle class="beat-dot" cx="190" cy="34" r="2.6"/><circle class="beat-dot" cx="340" cy="34" r="2.6"/><circle class="beat-dot" cx="490" cy="34" r="2.6"/><circle class="beat-dot" cx="640" cy="34" r="2.6"/><circle class="beat-dot" cx="790" cy="34" r="2.6"/><circle class="beat-dot" cx="940" cy="34" r="2.6"/></g>
+        <g class="rings" fill="none" stroke="var(--gold)" stroke-width="1.5"></g>
         <g fill="var(--faint)" font-family="JetBrains Mono, monospace" font-size="13">
           <text x="36" y="86">0s</text><text x="184" y="86">6</text><text x="334" y="86">12</text><text x="484" y="86">18</text><text x="634" y="86">24</text><text x="784" y="86">30</text><text x="934" y="86">36</text>
         </g>
@@ -180,6 +186,8 @@
     <div class="cta-row">
       <a class="btn solid" href="./bard-song-modeler.html">Open the interactive model →</a>
       <a class="btn" href="#preamble">Read the plan ↓</a>
+      <button class="btn" id="playBtn" type="button" aria-label="Play the ballad">&#9834; Play the ballad</button>
+      <audio id="ballad" src="./re-strung.mp3" preload="none"></audio>
     </div>
   </div>
 </header>
@@ -449,5 +457,71 @@ next song &#8594; 6s channel, <span class="k">1 tick / second</span>   <span cla
   </div>
 </footer>
 
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- gradient sweep: travels fully across, pulses each line as the bright edge reaches it ---- */
+  var ruler = document.querySelector('.ruler');
+  if(ruler && !reduce){
+    var svg = ruler.querySelector('svg');
+    var sweep = ruler.querySelector('.sweep');
+    var ringsG = svg.querySelector('.rings');
+    var dots = Array.prototype.slice.call(svg.querySelectorAll('.beat-dot'));
+    var VB = 1040;                               // viewBox width
+    var beats = dots.map(function(d){ return parseFloat(d.getAttribute('cx')); });
+    var BAR_W = 130, BRIGHT = 107, LEAD = 175;   // px: bar width, bright-edge offset, off-screen lead-in/out
+    var SWEEP_MS = 6000;                         // full traversal time (tweak for tempo)
+    var rulerW = ruler.clientWidth || 1000;
+    window.addEventListener('resize', function(){ rulerW = ruler.clientWidth || rulerW; });
+    var t0 = null, lastBright = -1;
+
+    function ring(cx){
+      var c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx', cx); c.setAttribute('cy', 34); c.setAttribute('r', 6);
+      c.setAttribute('class','beat-ring');
+      ringsG.appendChild(c);
+      setTimeout(function(){ c.remove(); }, 650);
+    }
+    function pulse(i){
+      var d = dots[i]; if(!d) return;
+      d.classList.remove('lit'); void d.getBBox(); d.classList.add('lit');
+      ring(beats[i]);
+    }
+    function frame(t){
+      if(t0===null) t0=t;
+      var frac = ((t - t0) % SWEEP_MS) / SWEEP_MS;          // 0..1, continuous loop
+      var x = -LEAD + (rulerW + 2*LEAD) * frac;             // bar's left edge, px (off-screen both ends)
+      sweep.style.transform = 'translateX(' + x + 'px)';
+      var bright = (x + BRIGHT) / rulerW;                   // bright leading edge as fraction of width
+      if(bright < lastBright) lastBright = -1;              // wrapped back to the start
+      for(var i=0;i<beats.length;i++){
+        var bf = beats[i]/VB;
+        if(lastBright < bf && bright >= bf) pulse(i);       // bright edge just reached this line
+      }
+      lastBright = bright;
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ---- play the ballad once ---- */
+  var btn = document.getElementById('playBtn');
+  var audio = document.getElementById('ballad');
+  if(btn && audio){
+    var LABEL = btn.innerHTML;
+    audio.addEventListener('ended', function(){ btn.innerHTML = LABEL; });
+    audio.addEventListener('error', function(){ btn.innerHTML = '&#9834; song coming soon'; btn.disabled = true; });
+    btn.addEventListener('click', function(){
+      if(!audio.paused){ audio.pause(); audio.currentTime = 0; btn.innerHTML = LABEL; return; }
+      audio.currentTime = 0;
+      var p = audio.play();
+      if(p && p.then){ p.then(function(){ btn.innerHTML = '&#9632; Stop the ballad'; })
+        .catch(function(){ btn.innerHTML = '&#9834; song coming soon'; }); }
+      else { btn.innerHTML = '&#9632; Stop the ballad'; }
+    });
+  }
+})();
+</script>
 </body>
 </html>
