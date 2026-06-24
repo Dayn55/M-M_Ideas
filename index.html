@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
+<<style>
   :root{
     --ink:#15120e; --panel:#1d1813; --panel2:#241e16; --line:#3a3024;
     --parch:#ece0cd; --muted:#a8967c; --faint:#796a55;
@@ -119,6 +119,18 @@
   .modelcard li{position:relative; padding-left:24px; margin-bottom:10px; color:var(--muted)}
   .modelcard li::before{content:"♪"; position:absolute; left:0; color:var(--gold)}
   .modelcard li strong{color:var(--parch)}
+
+  /* activated abilities */
+  .abilities{display:flex; flex-direction:column; gap:18px; margin-top:8px}
+  .ability{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:24px 26px 22px; border-left:3px solid var(--gold)}
+  .ability.crescendo{border-left-color:var(--garnet)}
+  .ability .ahead{display:flex; align-items:baseline; gap:12px; margin-bottom:10px; flex-wrap:wrap}
+  .ability .aname{font-family:"Marcellus",serif; font-size:27px; line-height:1}
+  .ability .atag{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); border:1px solid var(--line); border-radius:20px; padding:3px 10px}
+  .ability.crescendo .atag{color:var(--garnet)}
+  .ability p{margin:0 0 14px; font-size:16.5px; color:var(--muted)}
+  .ability p:last-of-type{margin-bottom:0}
+  .ability p strong{color:var(--parch)}
 
   .callout{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:18px 22px; margin:22px 0; font-size:16.5px; color:var(--muted)}
   .callout strong{color:var(--gold)}
@@ -313,7 +325,7 @@ value = base <span class="k">&times;</span> (1 + bonus)
     <div class="eyebrow">05 — A finding from the math</div>
     <h2>Why Brass lives on single effects, not twisted DoTs</h2>
     <p>Running the numbers settles an old question. A <strong>five&#8209;DoT twist always out&#8209;damages a single sustained DoT</strong> on one target — it isn't close. Even a heavily&#8209;stacked single damage song reaches only a fraction of what the twist delivers, and bringing them to parity would need a bonus so large it would break everything else.</p>
-    <p>So single&#8209;DoT "dedication" is <em>intentionally</em> not a single&#8209;target DPS path — and that's fine, because it frees Brass's big magnitude to point at the things that are single&#8209;effect by nature: a <strong>heal</strong>, a <strong>charm</strong>, a <strong>hate</strong> or <strong>buff serenade</strong> on one target. Committing to one song and ramping it hard <em>is</em> the payoff, on the songs where ramping one thing is the whole point.</p>
+    <p>So single&#8209;DoT "dedication" is <em>intentionally</em> not a single&#8209;target DPS path — and that's fine, because it frees Brass's big magnitude to point at the things that are single&#8209;effect by nature: a <strong>heal</strong>, a <strong>charm</strong>, a <strong>hate spike</strong>, or a <strong>buff held on one target</strong>. Committing to one song and ramping it hard <em>is</em> the payoff, on the songs where ramping one thing is the whole point — and the <a href="#abilities">Serenade</a> ability below is the tool built for exactly that moment.</p>
   </div>
 </section>
 
@@ -332,10 +344,46 @@ effective = value / (k + value)        <span class="c"># approaches 1, never rea
   </div>
 </section>
 
+<!-- ACTIVATED ABILITIES -->
+<section class="section" id="abilities">
+  <div class="wrap read">
+    <div class="eyebrow">07 — Two ways to break the rhythm</div>
+    <h2>Crescendo &amp; Serenade</h2>
+    <p class="first">Everything to here is <em>passive</em> accumulation — warm up, hold your songs, let Resonance climb. Two activated abilities let the bard spike that accumulation on demand: one overcharges the whole performance, the other pours it into a single target.</p>
+
+    <div class="abilities">
+      <div class="ability crescendo">
+        <div class="ahead"><span class="aname">Crescendo</span><span class="atag">Activated · overcharge</span></div>
+        <p>For <strong>18 seconds</strong>, your Attunement is pinned at <strong>50%</strong> regardless of the instrument in your hands — well above any instrument's normal cap — so every song you play rides a 50% floor. When the window closes, Attunement settles straight back to its normal accumulated value.</p>
+        <p>This is the bard's burst button: a true <em>overcharge</em> rather than a fast warm&#8209;up. Because 50% sits above even Brass's ceiling, Crescendo lifts you past a height no instrument reaches on its own — and it works the same whether you're holding a horn or singing bare&#8209;handed. Line it up with your hardest&#8209;hitting rotation and let it rip.</p>
+        <div class="spec">
+<span class="c"># Crescendo — activated, instrument-agnostic</span>
+attunement = <span class="k">50%</span>   for 18s   <span class="c"># overrides the usual ceiling</span>
+<span class="c"># reverts to normal attunement the moment it expires</span>
+        </div>
+      </div>
+
+      <div class="ability">
+        <div class="ahead"><span class="aname">Serenade</span><span class="atag">Activated · single target</span></div>
+        <p>Activate Serenade and your <strong>next song</strong> becomes a 6&#8209;second performance aimed at <strong>one target</strong>, applying <strong>once per second</strong> — six rapid ticks, in the spirit of how bandaging channels today.</p>
+        <p>It inherits <em>everything</em>. The song's current <strong>Resonance</strong> and <strong>Attunement</strong> scale each of the six ticks, Percussion's front&#8209;loaded <strong>pulse</strong> still fires, and Wind's <strong>cast speed</strong> and String's <strong>duration</strong> still shape it. So the instrument you main colors how your Serenade plays — brass lands heavy and steady, percussion front&#8209;loads, string stretches the channel, wind quickens it. This is the focus&#8209;fire tool: ramp a song to high Resonance, then dump it into one target in a tight burst — the mechanical home for a charm lock, a hate spike, a clutch heal, or a focused debuff.</p>
+        <div class="spec">
+<span class="c"># Serenade — activated, channels on one target</span>
+next song &#8594; 6s channel, <span class="k">1 tick / second</span>   <span class="c"># 6 ticks, single target</span>
+<span class="c"># each tick scales with resonance + attunement</span>
+<span class="c"># drum pulse · wind cast-speed · string duration all still apply</span>
+        </div>
+      </div>
+    </div>
+
+    <p style="margin-top:20px">Together they compound: a Serenade fired <em>inside</em> a Crescendo is six single&#8209;target ticks riding a 50% floor — the bard's biggest single moment. <span style="color:var(--faint)">(Both abilities live in the design here; the interactive model focuses on the passive Attunement/Resonance loop and doesn't simulate them yet.)</span></p>
+  </div>
+</section>
+
 <!-- DECISIONS -->
 <section class="section">
   <div class="wrap read">
-    <div class="eyebrow">07 — The point of all of it</div>
+    <div class="eyebrow">08 — The point of all of it</div>
     <h2>The decisions this creates</h2>
     <p>Every system above exists to put a choice in front of the bard. A few of the ones that emerge:</p>
     <div class="decisions">
@@ -345,9 +393,9 @@ effective = value / (k + value)        <span class="c"># approaches 1, never rea
         <p>Read the incoming damage, start the healing hymn <strong>early</strong>, and hold it so its Resonance is near cap by the time the tank actually gets hit — trading a few seconds of anticipation for a much larger heal at the moment it counts.</p>
       </div>
       <div class="decision">
-        <span class="tag">Commitment</span>
+        <span class="tag">Focus fire</span>
         <h4>Serenade a target</h4>
-        <p>Pick up Brass, commit to a single charm, buff, or hate song on <strong>one</strong> target, and ramp it hard for outsized single&#8209;effect impact. This is the dedication payoff the damage math deliberately leaves room for.</p>
+        <p>Ramp a song to high Resonance, then fire <strong>Serenade</strong> to pour it into one target as a six&#8209;tick burst — and stack it under <strong>Crescendo</strong> for the bard's single biggest hit. The focused payoff the damage math deliberately leaves room for.</p>
       </div>
       <div class="decision">
         <span class="tag">Breadth</span>
@@ -366,7 +414,7 @@ effective = value / (k + value)        <span class="c"># approaches 1, never rea
 <!-- MODEL -->
 <section class="section">
   <div class="wrap read">
-    <div class="eyebrow">08 — See it move</div>
+    <div class="eyebrow">09 — See it move</div>
     <div class="modelcard">
       <h2>The interactive model</h2>
       <p style="margin-bottom:18px">Numbers on a page only go so far, so this all comes with a live model you can poke at. Build a rotation, set a level and a fight length, dial each instrument's caps, and watch it play out.</p>
@@ -385,7 +433,7 @@ effective = value / (k + value)        <span class="c"># approaches 1, never rea
 <!-- INVITATION -->
 <section class="section">
   <div class="wrap read">
-    <div class="eyebrow">09 — Over to you</div>
+    <div class="eyebrow">10 — Over to you</div>
     <h2>Open questions &amp; an invitation</h2>
     <p class="first">This is a lot of machinery, and it may genuinely be more than the class wants to carry — that's a fair critique and I'd rather hear it than not. But the depth of choice is, to me, exactly what would make this bard a joy to play, and the hyperbolic scaling is the rail that keeps that depth from turning into raw power.</p>
     <p>Suggestions, holes, and "you've overcomplicated this" are all welcome. Read the plan, open the model, break it, and tell me where it's wrong.</p>
@@ -403,4 +451,3 @@ effective = value / (k + value)        <span class="c"># approaches 1, never rea
 
 </body>
 </html>
-
