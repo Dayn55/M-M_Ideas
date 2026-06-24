@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>M&M Ideas</title>
-
-  <meta property="og:type" content="website">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Re-strung · A Bard Instrument Redesign — Monsters &amp; Memories</title>
+<meta name="description" content="Attunement, Resonance, and the game tick: a depth-of-choice redesign for the Monsters & Memories Bard, with an interactive model.">
+<meta property="og:type" content="website">
   <meta property="og:title" content="M&M Ideas">
   <meta property="og:description" content="A collection of creative M&M concepts.">
   <meta property="og:image" content="https://dayn55.github.io/M-M_Ideas/preview.png">
@@ -15,419 +15,392 @@
   <meta property="og:site_name" content="M&M Ideas">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#14110f">
-
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bard Song Modeler</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#14110f; --panel:#1c1814; --panel2:#241f1a; --line:#3a322a;
-    --ink:#efe6d8; --muted:#a99a86; --faint:#7a6e5e;
-    --gold:#c9a24a; --gold-dim:#8f7333;
-    --dmg:#c8552d; --heal:#3f9d6f; --mana:#4a78c2;
-    --c-brass:#c9a24a; --c-perc:#8a6fd0; --c-wind:#4aa9b8; --c-string:#c0773f; --c-none:#8a7e6c;
-    --break:#d2473f;
+    --ink:#15120e; --panel:#1d1813; --panel2:#241e16; --line:#3a3024;
+    --parch:#ece0cd; --muted:#a8967c; --faint:#796a55;
+    --gold:#d0a64f; --gold-deep:#8a6d2f;
+    --brass:#cda84e; --perc:#9a7fda; --wind:#54b3c2; --string:#cc8347; --none:#988a72;
+    --garnet:#a8403a;
+    --maxw:1080px; --read:680px;
   }
   @media (prefers-color-scheme: light){
-    :root{ --bg:#f5efe4; --panel:#ffffff; --panel2:#f0e8da; --line:#ddd0bb; --ink:#2b2419; --muted:#6a5e4c; --faint:#9c8e78; --gold:#9a7a28; --gold-dim:#b8923a; }
+    :root{ --ink:#efe7d6; --panel:#fbf5e9; --panel2:#f3ebda; --line:#d8c9ad; --parch:#2a2114; --muted:#6c5d45; --faint:#9a8a70; --gold:#9a7826; --gold-deep:#b9933b; }
   }
   *{box-sizing:border-box}
-  body{margin:0; background:var(--bg); color:var(--ink); font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif; line-height:1.5; -webkit-font-smoothing:antialiased}
-  .wrap{max-width:1200px; margin:0 auto; padding:26px 20px 60px}
-  header{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; border-bottom:1px solid var(--line); padding-bottom:15px; margin-bottom:20px}
-  h1{font-size:25px; margin:0; letter-spacing:.3px; font-weight:600}
-  .sub{color:var(--muted); font-size:14px; font-style:italic}
-  .grid{display:grid; grid-template-columns:330px 1fr; gap:20px; align-items:start}
-  @media (max-width:900px){ .grid{grid-template-columns:1fr} }
-  .panel{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:15px}
-  .panel h2{font-size:12px; text-transform:uppercase; letter-spacing:1.3px; color:var(--gold); margin:0 0 12px; font-weight:600; font-family:"Trebuchet MS",sans-serif}
-  .field{margin-bottom:12px}
-  .field label{display:flex; justify-content:space-between; font-size:13px; color:var(--muted); margin-bottom:4px; font-family:"Trebuchet MS",sans-serif}
-  .field label .val{color:var(--ink); font-weight:600}
-  select{width:100%; background:var(--panel2); color:var(--ink); border:1px solid var(--line); border-radius:7px; padding:7px 9px; font-size:13px; font-family:"Trebuchet MS",sans-serif; appearance:none; cursor:pointer}
-  input[type=range]{width:100%; -webkit-appearance:none; appearance:none; height:5px; border-radius:4px; background:var(--line); cursor:pointer; margin:7px 0 1px}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:15px; height:15px; border-radius:50%; background:var(--gold); border:2px solid var(--bg); cursor:pointer}
-  input[type=range]::-moz-range-thumb{width:15px; height:15px; border-radius:50%; background:var(--gold); border:2px solid var(--bg); cursor:pointer}
-  select:focus,input:focus{outline:2px solid var(--gold-dim); outline-offset:1px}
-  .hint{font-size:11px; color:var(--faint); margin-top:3px; font-family:"Trebuchet MS",sans-serif}
-  .songslot{display:flex; align-items:center; gap:8px; margin-bottom:7px}
-  .songslot .dot{width:9px; height:9px; border-radius:50%; flex:none; background:var(--faint)}
-  .songslot select{flex:1}
-  .instrow{border:1px solid var(--line); border-radius:9px; padding:10px 11px; margin-bottom:9px; background:var(--panel2)}
-  .instrow .top{display:flex; align-items:center; gap:8px; margin-bottom:7px}
-  .instrow .swatch{width:11px; height:11px; border-radius:3px; flex:none}
-  .instrow .nm{font-size:13.5px; font-weight:600; font-family:"Trebuchet MS",sans-serif; flex:1}
-  .instrow .vis{font-size:11px; color:var(--faint); font-family:"Trebuchet MS",sans-serif; cursor:pointer; user-select:none}
-  .instrow.off{opacity:.45}
-  .minislide{display:flex; align-items:center; gap:8px; margin-bottom:5px}
-  .minislide span{font-size:11px; color:var(--muted); font-family:"Trebuchet MS",sans-serif; min-width:80px}
-  .minislide input{flex:1}
-  .minislide b{font-size:11px; color:var(--ink); min-width:36px; text-align:right; font-family:"Trebuchet MS",sans-serif; font-weight:600}
-  .cmp-table{width:100%; border-collapse:collapse; font-family:"Trebuchet MS",sans-serif; font-size:13px}
-  .cmp-table th{text-align:right; padding:6px 8px; color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.6px; border-bottom:1px solid var(--line)}
-  .cmp-table th:first-child{text-align:left}
-  .cmp-table td{padding:6px 8px; text-align:right; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums}
-  .cmp-table td:first-child{text-align:left; font-weight:600}
-  .cmp-table .sw{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:7px; vertical-align:middle}
-  .chartcard{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px 16px 16px; margin-bottom:16px}
-  .ctitle{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px}
-  .ctitle h3{font-size:14px; margin:0; font-weight:600; font-family:"Trebuchet MS",sans-serif}
-  .seg{display:inline-flex; border:1px solid var(--line); border-radius:7px; overflow:hidden}
-  .seg button{background:transparent; color:var(--muted); border:0; padding:5px 11px; font-size:12px; cursor:pointer; font-family:"Trebuchet MS",sans-serif}
-  .seg button.on{background:var(--gold); color:#1a1408; font-weight:600}
-  .chart-host{position:relative; width:100%; height:320px}
-  .legend{display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-bottom:8px; font-family:"Trebuchet MS",sans-serif}
-  .legend span{display:flex; align-items:center; gap:5px; cursor:pointer}
-  .legend i{width:14px; height:3px; border-radius:2px; display:inline-block}
-  .legend span.off{opacity:.4; text-decoration:line-through}
-  .log{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px 16px}
-  .log h3{font-size:13px; text-transform:uppercase; letter-spacing:1.1px; color:var(--gold); margin:0 0 10px; font-weight:600; font-family:"Trebuchet MS",sans-serif}
-  .events{display:flex; flex-direction:column; gap:5px; max-height:200px; overflow:auto; font-family:"Trebuchet MS",sans-serif; font-size:12.5px}
-  .ev{display:flex; align-items:center; gap:9px; padding:4px 8px; border-radius:6px; background:var(--panel2)}
-  .ev .t{color:var(--faint); font-variant-numeric:tabular-nums; min-width:40px; font-size:12px}
-  .ev .pip{width:8px; height:8px; border-radius:50%; flex:none}
-  .ev.break .pip{background:var(--break)} .ev.drop .pip{background:#d98a2b} .ev.end .pip{background:var(--muted)} .ev.start .pip{background:var(--heal)}
-  .ev.break{color:var(--break)} .ev.drop{color:#d98a2b}
-  .note{font-size:12px; color:var(--faint); margin-top:14px; line-height:1.6; font-family:"Trebuchet MS",sans-serif}
-  .pill{display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-family:"Trebuchet MS",sans-serif; border:1px solid var(--line); color:var(--muted)}
-  .pill.ded{border-color:var(--c-brass); color:var(--c-brass)} .pill.twist{border-color:var(--c-perc); color:var(--c-perc)}
-  /* gantt */
-  .gantt-wrap{position:relative; width:100%; overflow-x:hidden}
-  #tooltip{position:fixed; pointer-events:none; z-index:50; background:var(--panel); border:1px solid var(--gold-dim); border-radius:8px; padding:8px 10px; font-family:"Trebuchet MS",sans-serif; font-size:12px; color:var(--ink); box-shadow:0 4px 16px rgba(0,0,0,.4); display:none; max-width:240px}
-  #tooltip .ti{font-weight:600; margin-bottom:3px}
-  #tooltip .tr{display:flex; justify-content:space-between; gap:14px; color:var(--muted)}
-  #tooltip .tr b{color:var(--ink)}
-  .glyphrow{display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap}
-  .glyph{display:flex; align-items:center; gap:5px; padding:3px 8px; border:1px solid var(--line); border-radius:7px; font-size:11px; font-family:"Trebuchet MS",sans-serif; color:var(--muted)}
-  .glyph svg{flex:none}
+  html{scroll-behavior:smooth}
+  body{margin:0; background:var(--ink); color:var(--parch);
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif; font-size:18px; line-height:1.66; -webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(800px 500px at 78% -8%, rgba(208,166,79,.06), transparent 70%); }
+  .mono{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px}
+  .read{max-width:var(--read); margin-left:auto; margin-right:auto}
+  a{color:var(--gold); text-decoration:none; border-bottom:1px solid var(--gold-deep)}
+  a:hover{color:var(--parch)}
+  :focus-visible{outline:2px solid var(--gold); outline-offset:3px; border-radius:2px}
+
+  .eyebrow{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:12px; letter-spacing:.32em; text-transform:uppercase; color:var(--gold); font-weight:500}
+
+  /* ---------- HERO ---------- */
+  .hero{padding:78px 0 26px; border-bottom:1px solid var(--line)}
+  .hero h1{font-family:"Marcellus",Palatino,Georgia,serif; font-weight:400; font-size:clamp(48px,9vw,104px); line-height:.96; margin:18px 0 0; letter-spacing:.01em}
+  .hero h1 .amp{color:var(--gold)}
+  .hero .lede{max-width:600px; margin:22px 0 0; font-size:clamp(18px,2.4vw,22px); color:var(--parch)}
+  .hero .meta{margin-top:14px; color:var(--muted); font-size:15px}
+
+  /* ---------- HEARTBEAT RULER (signature) ---------- */
+  .ruler{position:relative; margin:40px 0 6px; overflow:hidden}
+  .ruler svg{display:block; width:100%; height:auto}
+  .sweep{position:absolute; top:0; bottom:0; width:120px; pointer-events:none;
+    background:linear-gradient(90deg, transparent, rgba(208,166,79,.16)55%, rgba(208,166,79,.42) 82%, transparent);
+    transform:translateX(-160px); animation:sweep 5.2s linear infinite; mix-blend-mode:screen}
+  @keyframes sweep{ 0%{transform:translateX(-160px)} 100%{transform:translateX(calc(100% + 160px))} }
+  .ruler-cap{display:flex; justify-content:space-between; gap:18px; margin-top:6px; color:var(--faint); font-size:12.5px}
+  .ruler-cap b{color:var(--muted); font-weight:500}
+
+  .cta-row{display:flex; gap:14px; flex-wrap:wrap; margin-top:30px}
+  .btn{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:13px; letter-spacing:.06em; padding:12px 20px; border-radius:8px; border:1px solid var(--gold-deep); background:transparent; color:var(--gold); cursor:pointer; transition:.15s}
+  .btn.solid{background:var(--gold); color:#1c1407; border-color:var(--gold)}
+  .btn:hover{background:var(--gold); color:#1c1407; border-bottom-color:var(--gold)}
+  .btn.solid:hover{background:var(--parch)}
+
+  /* ---------- SECTIONS ---------- */
+  .section{padding:54px 0; border-bottom:1px solid var(--line)}
+  .section h2{font-family:"Marcellus",Palatino,Georgia,serif; font-weight:400; font-size:clamp(28px,4.4vw,42px); line-height:1.08; margin:10px 0 18px; letter-spacing:.01em}
+  .section h3{font-family:"Marcellus",Palatino,Georgia,serif; font-weight:400; font-size:23px; margin:30px 0 8px; color:var(--parch)}
+  .section p{margin:0 0 18px}
+  .section p.first{font-size:20px}
+  .lead-drop::first-letter{font-family:"Marcellus",serif; font-size:3.1em; line-height:.78; float:left; padding:6px 10px 0 0; color:var(--gold)}
+  em{color:var(--parch); font-style:italic}
+  strong{color:var(--parch); font-weight:600}
+
+  /* spec / formula callout */
+  .spec{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:14px; line-height:1.9; background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--gold); border-radius:8px; padding:16px 20px; margin:22px auto; color:var(--parch); overflow-x:auto}
+  .spec .c{color:var(--muted)}
+  .spec .k{color:var(--gold)}
+
+  /* pull quote / decisions */
+  .decisions{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:24px}
+  @media (max-width:680px){ .decisions{grid-template-columns:1fr} }
+  .decision{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:20px 22px}
+  .decision .tag{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold)}
+  .decision h4{font-family:"Marcellus",serif; font-weight:400; font-size:21px; margin:8px 0 6px}
+  .decision p{font-size:16px; margin:0; color:var(--muted)}
+  .decision p strong{color:var(--parch)}
+
+  /* instrument families */
+  .families{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:8px}
+  @media (max-width:680px){ .families{grid-template-columns:1fr} }
+  .family{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:22px 22px 20px; position:relative}
+  .family.brass{border-top:3px solid var(--brass)} .family.perc{border-top:3px solid var(--perc)} .family.wind{border-top:3px solid var(--wind)} .family.string{border-top:3px solid var(--string)}
+  .family .fhead{display:flex; align-items:center; gap:12px; margin-bottom:8px}
+  .family .glyph{width:34px; height:28px; flex:none}
+  .family .fname{font-family:"Marcellus",serif; font-size:24px}
+  .family .frole{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-left:auto}
+  .family p{font-size:15.5px; line-height:1.6; margin:0 0 12px; color:var(--muted)}
+  .family p strong{color:var(--parch)}
+  .family .stats{display:flex; gap:8px; flex-wrap:wrap; font-family:"JetBrains Mono",ui-monospace,monospace; font-size:11px}
+  .family .stat{border:1px solid var(--line); border-radius:20px; padding:3px 10px; color:var(--faint)}
+  .family .stat b{color:var(--parch); font-weight:500}
+  .baseline{margin-top:16px; font-size:15.5px; color:var(--muted); display:flex; gap:12px; align-items:center; background:var(--panel); border:1px dashed var(--line); border-radius:10px; padding:14px 18px}
+  .baseline .glyph{width:28px; height:22px; flex:none; color:var(--none)}
+
+  /* axis map */
+  .axismap{margin:30px auto 6px; max-width:560px}
+  .axismap svg{width:100%; height:auto; display:block}
+
+  /* model card */
+  .modelcard{background:linear-gradient(180deg, var(--panel2), var(--panel)); border:1px solid var(--gold-deep); border-radius:14px; padding:30px 28px; margin-top:10px}
+  .modelcard h2{margin-top:0}
+  .modelcard ul{margin:0 0 22px; padding-left:0; list-style:none}
+  .modelcard li{position:relative; padding-left:24px; margin-bottom:10px; color:var(--muted)}
+  .modelcard li::before{content:"♪"; position:absolute; left:0; color:var(--gold)}
+  .modelcard li strong{color:var(--parch)}
+
+  .callout{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:18px 22px; margin:22px 0; font-size:16.5px; color:var(--muted)}
+  .callout strong{color:var(--gold)}
+
+  footer{padding:48px 0 70px; color:var(--faint); font-size:14px}
+  footer .mono{color:var(--muted)}
+
+  @media (prefers-reduced-motion: reduce){ .sweep{animation:none; opacity:.5; transform:translateX(40%)} }
 </style>
 </head>
 <body>
-<div id="tooltip"></div>
-<div class="wrap">
-  <header>
-    <h1>Bard Song Modeler</h1>
-    <span class="sub">attunement + resonance sandbox · drop modeling · Monsters &amp; Memories Bard proposal</span>
-  </header>
-  <div class="grid">
-    <div>
-      <div class="panel">
-        <h2>Performance</h2>
-        <div class="field"><label>Level <span class="val" id="lvlVal">40</span></label><input type="range" id="lvl" min="1" max="60" value="40"></div>
-        <div class="field"><label>Combat window <span class="val" id="winVal">60s</span></label><input type="range" id="win" min="18" max="180" value="60" step="6"></div>
-        <div class="field"><label>Starting attunement <span class="val" id="saVal">max</span></label><input type="range" id="sa" min="0" max="100" value="100" step="5"><div class="hint">% of each instrument's cap you begin with. Set to max to model an already-warmed-up 30s fight.</div></div>
-        <div class="field"><label>Cast cadence <span class="val">3s base · ticks 6s</span></label><div class="hint">Wind casts faster and String lasts longer, both scaling with attunement.</div></div>
-      </div>
-      <div class="panel" style="margin-top:14px">
-        <h2>Song rotation <span id="modeTag" class="pill"></span></h2>
-        <div id="slots"></div>
-        <div class="hint" style="margin-top:5px">7 songs can't all be held at 3s cadence (21s cycle &gt; 18s duration) — most instruments drop songs and reset resonance. Wind/String can keep up once attuned.</div>
-      </div>
-      <div class="panel" style="margin-top:14px">
-        <h2>Instruments <span class="pill" style="border-color:var(--gold-dim);color:var(--muted)">all shown</span></h2>
-        <div id="instConfig"></div>
-        <div class="hint" style="margin-top:4px">Click a name to hide it. Wind faster-cast and String longer-duration both scale by current attunement.</div>
-      </div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Monsters &amp; Memories · Bard class design proposal</div>
+    <h1>Re&#8209;strung<span class="amp">.</span></h1>
+    <p class="lede">Giving the Bard's instruments real weight — through <strong>Attunement</strong>, <strong>Resonance</strong>, and effects that resolve on the game's heartbeat.</p>
+    <p class="meta">A community design concept · paired with a live, tunable model</p>
+
+    <div class="ruler" aria-hidden="true">
+      <svg viewBox="0 0 1040 96" preserveAspectRatio="none" role="img">
+        <line x1="0" y1="64" x2="1040" y2="64" stroke="var(--line)" stroke-width="1.5"/>
+        <!-- beats every "6s" (tall), casts every "3s" (short, offset) -->
+        <g stroke="var(--gold)" stroke-width="2">
+          <line x1="40"  y1="34" x2="40"  y2="64"/><line x1="190" y1="34" x2="190" y2="64"/>
+          <line x1="340" y1="34" x2="340" y2="64"/><line x1="490" y1="34" x2="490" y2="64"/>
+          <line x1="640" y1="34" x2="640" y2="64"/><line x1="790" y1="34" x2="790" y2="64"/>
+          <line x1="940" y1="34" x2="940" y2="64"/>
+        </g>
+        <g stroke="var(--gold-deep)" stroke-width="1.5" opacity="0.8">
+          <line x1="115" y1="50" x2="115" y2="64"/><line x1="265" y1="50" x2="265" y2="64"/>
+          <line x1="415" y1="50" x2="415" y2="64"/><line x1="565" y1="50" x2="565" y2="64"/>
+          <line x1="715" y1="50" x2="715" y2="64"/><line x1="865" y1="50" x2="865" y2="64"/>
+        </g>
+        <g fill="var(--gold)" opacity="0.9"><circle cx="40" cy="34" r="2.6"/><circle cx="190" cy="34" r="2.6"/><circle cx="340" cy="34" r="2.6"/><circle cx="490" cy="34" r="2.6"/><circle cx="640" cy="34" r="2.6"/><circle cx="790" cy="34" r="2.6"/><circle cx="940" cy="34" r="2.6"/></g>
+        <g fill="var(--faint)" font-family="JetBrains Mono, monospace" font-size="13">
+          <text x="36" y="86">0s</text><text x="184" y="86">6</text><text x="334" y="86">12</text><text x="484" y="86">18</text><text x="634" y="86">24</text><text x="784" y="86">30</text><text x="934" y="86">36</text>
+        </g>
+      </svg>
+      <div class="sweep"></div>
     </div>
-    <div>
-      <div class="chartcard">
-        <div class="ctitle">
-          <h3>Cumulative delivery — all instruments</h3>
-          <div class="seg" id="metricSeg">
-            <button data-m="cum" class="on">Combined</button><button data-m="damage">Damage</button><button data-m="health">Healing</button><button data-m="mana">Mana</button>
-          </div>
-        </div>
-        <div class="legend" id="legend1"></div>
-        <div class="chart-host"><canvas id="chartCum"></canvas></div>
-      </div>
+    <div class="ruler-cap">
+      <span><b>tall beats</b> — the 6&#8209;second game tick, when effects resolve</span>
+      <span><b>short marks</b> — recasting a song, roughly every 3s</span>
+    </div>
 
-      <div class="chartcard">
-        <div class="ctitle"><h3>Cast timeline — <span id="ganttInstName">Brass</span></h3><select id="ganttInst" style="width:auto"></select></div>
-        <div class="glyphrow" id="glyphs"></div>
-        <div class="gantt-wrap"><svg id="gantt" width="100%" preserveAspectRatio="none"></svg></div>
-        <div class="hint" style="margin-top:6px">Each bar is one song held from cast to fall-off; gaps are drops (resonance resets). Hover a bar for its resonance and the value of its next tick. Vertical gold ticks are the 6s heartbeats.</div>
-      </div>
-
-      <div class="chartcard">
-        <div class="ctitle"><h3>Per-song bonus over time (attunement + resonance)</h3><select id="bonusInst" style="width:auto"></select></div>
-        <div class="chart-host" style="height:230px"><canvas id="chartBonus"></canvas></div>
-      </div>
-
-      <div class="chartcard">
-        <div class="ctitle"><h3>Totals at <span id="winEcho">60</span>s</h3></div>
-        <table class="cmp-table" id="cmpTable"></table>
-      </div>
-
-      <div class="log"><h3>Event timeline</h3><div class="events" id="events"></div></div>
-      <div class="note" id="modelNote"></div>
+    <div class="cta-row">
+      <a class="btn solid" href="./bard-song-modeler.html">Open the interactive model →</a>
+      <a class="btn" href="#preamble">Read the plan ↓</a>
     </div>
   </div>
-</div>
+</header>
 
-<script>
-const SONGS = {
-  "Dissonant Riffs":{type:"damage",dur:18,bp:[[2,2],[60,20]]},
-  "Disruptive Riffs":{type:"damage",dur:18,bp:[[8,4],[60,20]]},
-  "Discordant Riffs":{type:"damage",dur:18,bp:[[16,8],[60,20]]},
-  "Despondent Riffs":{type:"damage",dur:18,bp:[[32,12],[60,20]]},
-  "Dismal Riffs":{type:"damage",dur:18,bp:[[40,20],[60,30]]},
-  "Healing Hymn":{type:"health",dur:18,bp:[[1,2],[60,20]]},
-  "Hymn of Inspiration":{type:"mana",dur:18,bp:[[8,1],[60,15]]},
-  "Beats of War (stats)":{type:"buff",dur:18,bp:[[1,2],[16,4]]},
-  "Traveler's March (move%)":{type:"buff",dur:18,bp:[[5,25],[60,75]]},
-  "Allegro Moderato (atk%)":{type:"buff",dur:18,bp:[[28,25],[32,35]]},
-  "Allegro Assai (atk%)":{type:"buff",dur:18,bp:[[44,40],[48,50]]},
-  "Siren's Call (charm)":{type:"charm",dur:18,breakChance:0.08},
-  "Siren's Allure (charm)":{type:"charm",dur:18,breakChance:0.05},
-  "Siren's Compulsion (charm)":{type:"charm",dur:18,breakChance:0.03},
-  "Siren's Thrall (charm)":{type:"charm",dur:18,breakChance:0.02},
-  "Somniferous Serenade (mez)":{type:"cc",dur:18,label:"Mez"},
-  "Aria de Lento (slow)":{type:"cc",dur:18,label:"Slow"},
-};
-const TYPE_COLOR={damage:"#c8552d",health:"#3f9d6f",mana:"#4a78c2",buff:"#c9a24a",charm:"#b85cc0",cc:"#7a8aa0"};
-const INST={
-  Brass:{color:"#c9a24a",aCap:20,rCap:35,resMode:"linear",mod:3.0,kickCast1:true,pulse:0,windScale:false,stringScale:false,on:true,desc:"constant advancement + high cap"},
-  Percussion:{color:"#8a6fd0",aCap:15,rCap:25,resMode:"hyper",mod:0,kickCast1:false,pulse:5,windScale:false,stringScale:false,on:true,desc:"off-beat pulse every refresh"},
-  Wind:{color:"#4aa9b8",aCap:15,rCap:25,resMode:"hyper",mod:0,kickCast1:false,pulse:0,windScale:true,stringScale:false,on:true,desc:"casts faster by attunement% — fits one more cast/tick at full attune"},
-  String:{color:"#c0773f",aCap:17,rCap:25,resMode:"hyper",mod:0,kickCast1:false,pulse:0,windScale:false,stringScale:true,on:true,desc:"lasts longer by attunement% — holds one more song at full attune"},
-  None:{color:"#8a7e6c",aCap:0,rCap:0,resMode:"hyper",mod:0,kickCast1:false,pulse:0,windScale:false,stringScale:false,on:true,desc:"singing only — baseline"},
-};
-const BASE_CAD=3, K_ATTUNE=4, K_RES=2.5, EPS=1e-6;
-function hyp(n,k){return (k+n)>0?n/(k+n):0;}
-function lerp(bp,L){const[[l1,v1],[l2,v2]]=bp;if(L<=l1)return v1;if(L>=l2)return v2;return v1+(v2-v1)*(L-l1)/(l2-l1);}
-function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
-function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
-function fmt(n){return Math.round(n).toLocaleString();}
-function maxSongsAtCap(P){const a=P.aCap/100;const cad=P.windScale?BASE_CAD*(1-a):BASE_CAD;const dur=P.stringScale?18*(1+a):18;return Math.floor(dur/cad+1e-9);}
+<main>
 
-function resBonus(P,A,stack){
-  const rCap=P.rCap/100, mod=P.mod/100;
-  if(stack<=0) return 0;
-  if(P.resMode==="linear") return Math.max(0,Math.min(rCap-A, mod*stack));
-  const steps=P.kickCast1?stack:(stack-1);
-  return Math.max(0,(rCap-A)*hyp(Math.max(0,steps),K_RES));
-}
+<!-- PREAMBLE -->
+<section class="section" id="preamble">
+  <div class="wrap read">
+    <div class="eyebrow">00 — The brief</div>
+    <h2>What we're trying to accomplish</h2>
+    <p class="first lead-drop">The official Bard notes ask for instruments to become <em>central</em> to the class rather than optional flourishes: more damage songs, more songs that genuinely require an instrument, and less reliance on permanent, set-and-forget charm. The hard part isn't adding songs — it's making the instrument in your hands <em>matter</em> moment to moment, and giving the bard real decisions, without letting any of it spiral into runaway power.</p>
+    <p>This proposal adds two stacking systems — <strong>Attunement</strong> and <strong>Resonance</strong> — both held in check by <strong>hyperbolic scaling</strong> (diminishing returns) so the numbers stay bounded no matter how hard they're stacked. On top of that sit four <strong>instrument families</strong> that each reshape the same underlying bonus in a different way, so choosing wind, percussion, string, or brass is choosing a playstyle, not just a stat stick.</p>
+    <p>It is, admittedly, a fair amount of machinery. The wager is that the <em>depth of choice</em> is what makes a bard fun to actually play — and that the diminishing-returns math is the safety rail that lets us offer that depth without breaking the class over our knee.</p>
+  </div>
+</section>
 
-function simulate(P,cfg){
-  const sel=cfg.songs.filter(Boolean).map(n=>({name:n,...SONGS[n]}));
-  const aCap=P.aCap/100, pulse=P.pulse/100;
-  const startFrac=cfg.startAttune/100;
-  let c0=0; if(aCap>0 && startFrac>0){ c0 = startFrac<0.999 ? K_ATTUNE*startFrac/(1-startFrac) : 5000; }
-  const rng=mulberry32(hash(cfg.songs.join("|")+cfg.lvl+cfg.win));
-  const uniq=[...new Set(sel.map(s=>s.name))];
+<!-- CORE LOOP / GAME TICK -->
+<section class="section">
+  <div class="wrap read">
+    <div class="eyebrow">01 — The core loop</div>
+    <h2>Cadence, and the game tick</h2>
+    <p>A bard keeps a song alive by replaying it about every <strong>3 seconds</strong>. The song's effect — damage, a heal, a tick of mana — lands on the world's <strong>6&#8209;second tick</strong>, the heartbeat that everything else in the world already runs on. Two casts per tick is the rhythm the whole system sits on.</p>
 
-  // 1) cast schedule (dynamic cadence for Wind)
-  const casts=[]; let t=0, ci=0;
-  while(t<=cfg.win && sel.length){
-    const cA=casts.length+c0;
-    const A=aCap>0?aCap*hyp(cA,K_ATTUNE):0;
-    casts.push({time:+t.toFixed(3),song:sel[ci%sel.length].name,A});
-    let cad=P.windScale?BASE_CAD*(1-A):BASE_CAD;
-    t+=Math.max(0.5,cad); ci++;
-  }
-  const castTimes=casts.map(c=>c.time);
-  const Aat=(h)=>{ if(aCap<=0)return 0; const c=castTimes.filter(ct=>ct<=h+EPS).length+c0; return aCap*hyp(c,K_ATTUNE); };
+    <h3>The one change we'd actually recommend</h3>
+    <p>Today a song's effect tends to count time from the moment <em>you</em> cast it. We'd recommend instead that bard effects resolve <strong>on the game tick</strong> — sampled on the global heartbeat rather than on a private per-cast timer.</p>
+    <p>The reason is that everything below — how much a song has "warmed up" — gets read at a single, predictable instant. That turns timing into a <em>decision</em> instead of a quiet dice-roll on whether your cast happened to line up with the tick. It also lets the bard's effects breathe with the rest of the encounter's rhythm.</p>
+    <div class="callout"><strong>Not a hard requirement.</strong> Every system in this document works just as well if effects keep counting from each cast. Only the <em>feel</em> of the timing changes — anchoring to the shared heartbeat is the version we think reads cleanest, but the time-from-cast version is a perfectly fine fallback.</div>
+  </div>
+</section>
 
-  // 2) per-song applications: duration (String scales) + resonance stack (reset on drop)
-  const apps={}; uniq.forEach(n=>apps[n]=[]);
-  const bySong={}; uniq.forEach(n=>bySong[n]=[]);
-  casts.forEach(c=>bySong[c.song].push(c));
-  const events=[];
-  uniq.forEach(name=>{
-    const baseDur=SONGS[name].dur; let stack=0, prevEnd=-1e9, first=true;
-    bySong[name].forEach(c=>{
-      const dur=P.stringScale?baseDur*(1+c.A):baseDur;
-      if(c.time>prevEnd+EPS){ if(!first) events.push({t:Math.round(prevEnd),kind:'drop',song:name}); stack=1; }
-      else stack++;
-      const bonus=c.A+resBonus(P,c.A,stack);
-      const base=lerp(SONGS[name].bp||[[1,0],[60,0]],cfg.lvl);
-      apps[name].push({time:c.time,end:c.time+dur,A:c.A,dur,stack,bonus,value:base*(1+bonus)});
-      prevEnd=c.time+dur; first=false;
-    });
-  });
+<!-- ATTUNEMENT -->
+<section class="section">
+  <div class="wrap read">
+    <div class="eyebrow">02 — The global floor</div>
+    <h2>Attunement</h2>
+    <p>Every time the bard finishes a cast — <em>any</em> song — Attunement rises. It climbs a hyperbolic curve toward a cap set by the instrument you're holding, and it applies to every song you play as a baseline bonus: a floor under everything. Think of it as the bard warming up with the instrument. It carries across song changes and only steps back down if you <em>swap to a different instrument</em>.</p>
+    <div class="spec">
+<span class="c"># Attunement — global, builds on every cast</span>
+attunement = cap <span class="k">&times;</span> n / (k + n)
+<span class="c"># n = casts performed · k tunes how fast it saturates</span>
+    </div>
+    <p>Because the curve is hyperbolic, the first casts give the biggest gains and each later cast gives a little less. The bonus <em>approaches</em> the cap and never punches through it — which is the whole trick to keeping it safe.</p>
+  </div>
+</section>
 
-  // 3) ticks on global heartbeat
-  const ticks=[]; for(let h=6;h<=cfg.win;h+=6) ticks.push(h);
-  const cumT={damage:0,health:0,mana:0,buff:0};
-  const pts=[{t:0,cum:0,damage:0,health:0,mana:0}];
-  const bonusSeries=[]; const charm={};
-  let trackSong=null; sel.forEach(s=>{ if(['damage','health','mana'].includes(s.type)&&!trackSong)trackSong=s.name; if(s.type==='charm')charm[s.name]={up:0,breaks:0}; });
-  uniq.forEach(n=>events.push({t:0,kind:'start',song:n}));
-  ticks.forEach(h=>{
-    const A=Aat(h); let trackBonus=A;
-    uniq.forEach(name=>{
-      const aps=apps[name].filter(a=>a.time<=h+EPS && a.end>=h-EPS);
-      if(!aps.length) return;
-      const cov=aps[aps.length-1];
-      const s=SONGS[name]; const base=lerp(s.bp||[[1,0],[60,0]],cfg.lvl);
-      const bonus=A+resBonus(P,A,cov.stack);
-      if(['damage','health','mana','buff'].includes(s.type)){
-        cumT[s.type]+=base*(1+bonus);
-        if(pulse>0){ const np=bySong[name].filter(c=>c.time>h-6+EPS && c.time<=h+EPS).length; cumT[s.type]+=base*pulse*np; }
-      }
-      if(name===trackSong) trackBonus=bonus;
-      if(s.type==='charm'){ charm[name].up+=6; if(rng()<s.breakChance){events.push({t:h,kind:'break',song:name}); charm[name].breaks++;} }
-    });
-    const cum=cumT.damage+cumT.health+cumT.mana+cumT.buff;
-    pts.push({t:h,cum,damage:cumT.damage,health:cumT.health,mana:cumT.mana});
-    bonusSeries.push({t:h,bonus:trackBonus,attune:A});
-  });
-  uniq.forEach(n=>events.push({t:cfg.win,kind:'end',song:n}));
-  const dedicating=uniq.length===1&&sel.length>0;
-  return {pts,bonusSeries,events,totals:{...cumT,cum:cumT.damage+cumT.health+cumT.mana+cumT.buff,charm},apps,uniq,casts,dedicating,trackSong};
-}
+<!-- RESONANCE -->
+<section class="section">
+  <div class="wrap read">
+    <div class="eyebrow">03 — Per&#8209;song depth</div>
+    <h2>Resonance</h2>
+    <p>Where Attunement is global, <strong>Resonance</strong> belongs to the single song you're currently sustaining. Each consecutive cast of the same song builds Resonance on top of the Attunement floor, reaching toward the instrument's higher Resonance cap. The instant a song drops — you let it lapse, or you tried to juggle too many at once — that song's Resonance <strong>resets to the floor</strong>.</p>
+    <div class="spec">
+bonus = attunement + resonance      <span class="c"># capped at the resonance cap</span>
+value = base <span class="k">&times;</span> (1 + bonus)
+    </div>
+    <p>This is the heart of the design: a <strong>breadth&#8209;versus&#8209;depth gradient</strong>. Twist fewer songs and each is recast more often, so each carries higher Resonance. Twist many and each is recast rarely, so each sits low. <em>Three songs played tightly out&#8209;resonate six songs played sloppily.</em> And a bard greedily holding more songs than the 3&#8209;second cadence can support will watch them fall off and reset — an honest, self&#8209;correcting penalty for over&#8209;reach rather than a hard cap on song count.</p>
+  </div>
+</section>
 
-const SONG_NAMES=Object.keys(SONGS);
-const state={lvl:40,win:60,startAttune:100,metric:"cum",bonusInst:"Brass",ganttInst:"Brass",
-  songs:["Dismal Riffs","Discordant Riffs","Despondent Riffs","Disruptive Riffs","Dissonant Riffs","Healing Hymn","Hymn of Inspiration"]};
+<!-- INSTRUMENT FAMILIES -->
+<section class="section">
+  <div class="wrap">
+    <div class="read" style="margin-bottom:8px">
+      <div class="eyebrow">04 — Four tools, one bonus reshaped</div>
+      <h2>The instrument families</h2>
+      <p>All four feed the same Attunement / Resonance engine — but each bends it a different way. They sort along two axes: how the bonus <em>ramps</em> (quick and front&#8209;loaded vs. slow and steady), and which <em>playstyle</em> they reward (twisting a wide rotation vs. committing to one effect).</p>
+    </div>
 
-function buildSlots(){
-  const host=document.getElementById('slots');host.innerHTML='';
-  for(let i=0;i<7;i++){
-    const row=document.createElement('div');row.className='songslot';
-    const dot=document.createElement('span');dot.className='dot';
-    const sel=document.createElement('select');
-    sel.innerHTML='<option value="">— empty —</option>'+SONG_NAMES.map(n=>`<option ${state.songs[i]===n?'selected':''} value="${n}">${n}</option>`).join('');
-    const cur=state.songs[i];if(cur&&SONGS[cur])dot.style.background=TYPE_COLOR[SONGS[cur].type]||'var(--faint)';
-    sel.addEventListener('change',e=>{state.songs[i]=e.target.value;const s=SONGS[e.target.value];dot.style.background=s?(TYPE_COLOR[s.type]||'var(--faint)'):'var(--faint)';render();});
-    row.appendChild(dot);row.appendChild(sel);host.appendChild(row);
-  }
-}
-function mini(name,key,label,val,unit,min,max,step){return `<div class="minislide"><span>${label}</span><input type="range" data-name="${name}" data-key="${key}" min="${min}" max="${max}" step="${step}" value="${val}"><b>${val}${unit}</b></div>`;}
-function buildInstConfig(){
-  const host=document.getElementById('instConfig');host.innerHTML='';
-  Object.keys(INST).forEach(name=>{
-    const P=INST[name];const isBrass=name==='Brass',isPerc=name==='Percussion',isNone=name==='None';
-    let extra='';
-    if(isBrass)extra=mini(name,'mod','advance/cast',P.mod,'%',0,6,0.5);
-    if(isPerc)extra=mini(name,'pulse','pulse/refresh',P.pulse,'%',0,20,1);
-    const row=document.createElement('div');row.className='instrow'+(P.on?'':' off');
-    row.innerHTML=`<div class="top"><span class="swatch" style="background:${P.color}"></span><span class="nm">${name}</span><span class="vis" data-vis="${name}">${P.on?'hide':'show'}</span></div>
-      <div class="cfg" style="${P.on?'':'display:none'}"><div style="font-size:11px;color:var(--faint);margin-bottom:4px;font-family:'Trebuchet MS',sans-serif">${P.desc}</div>
-      <div id="holds-${name}" style="font-size:11px;color:var(--gold-dim);margin-bottom:6px;font-family:'Trebuchet MS',sans-serif"></div>
-      ${isNone?'':mini(name,'aCap','attune cap',P.aCap,'%',0,40,1)}${isNone?'':mini(name,'rCap','resonance cap',P.rCap,'%',0,50,1)}${extra}</div>`;
-    host.appendChild(row);
-  });
-  host.querySelectorAll('input[type=range]').forEach(inp=>inp.addEventListener('input',e=>{const{name,key}=e.target.dataset;INST[name][key]=+e.target.value;e.target.nextElementSibling.textContent=(+e.target.value)+'%';render();}));
-  host.querySelectorAll('[data-vis]').forEach(el=>el.addEventListener('click',()=>{INST[el.dataset.vis].on=!INST[el.dataset.vis].on;buildInstConfig();render();}));
-}
+    <div class="axismap read" aria-hidden="true">
+      <svg viewBox="0 0 560 360">
+        <defs></defs>
+        <!-- axes -->
+        <line x1="80" y1="40" x2="80" y2="320" stroke="var(--line)" stroke-width="1.5"/>
+        <line x1="80" y1="180" x2="540" y2="180" stroke="var(--line)" stroke-width="1.5"/>
+        <!-- axis labels -->
+        <text x="86" y="34" fill="var(--muted)" font-family="JetBrains Mono,monospace" font-size="11" letter-spacing="1">TWIST · BREADTH</text>
+        <text x="86" y="338" fill="var(--muted)" font-family="JetBrains Mono,monospace" font-size="11" letter-spacing="1">COMMIT · ONE EFFECT</text>
+        <text x="92" y="172" fill="var(--faint)" font-family="JetBrains Mono,monospace" font-size="11" letter-spacing="1">front-loaded</text>
+        <text x="448" y="172" fill="var(--faint)" font-family="JetBrains Mono,monospace" font-size="11" letter-spacing="1">steady / slow</text>
+        <!-- plotted instruments -->
+        <g font-family="Marcellus, serif" font-size="15">
+          <g transform="translate(150,92)"><circle r="22" fill="var(--panel)" stroke="var(--perc)" stroke-width="1.5"/><text x="0" y="40" text-anchor="middle" fill="var(--perc)">Percussion</text>
+            <g transform="translate(-11,-9)" stroke="var(--perc)" stroke-width="1.4" fill="none"><ellipse cx="11" cy="6" rx="8" ry="3"/><path d="M3 6v7c0 1.6 3.6 2.8 8 2.8s8-1.2 8-2.8V6"/></g></g>
+          <g transform="translate(250,128)"><circle r="22" fill="var(--panel)" stroke="var(--wind)" stroke-width="1.5"/><text x="0" y="40" text-anchor="middle" fill="var(--wind)">Wind</text>
+            <g transform="translate(-10,-8)" stroke="var(--wind)" stroke-width="1.4" fill="none" stroke-linecap="round"><path d="M2 9h16M6 9v-1M10 9v-1M14 9v-1"/></g></g>
+          <g transform="translate(430,118)"><circle r="22" fill="var(--panel)" stroke="var(--string)" stroke-width="1.5"/><text x="0" y="40" text-anchor="middle" fill="var(--string)">String</text>
+            <g transform="translate(-10,-9)" stroke="var(--string)" stroke-width="1.4" fill="none" stroke-linecap="round"><ellipse cx="8" cy="10" rx="6" ry="6"/><path d="M12.5 7 19 2"/></g></g>
+          <g transform="translate(450,258)"><circle r="22" fill="var(--panel)" stroke="var(--brass)" stroke-width="1.5"/><text x="0" y="40" text-anchor="middle" fill="var(--brass)">Brass</text>
+            <g transform="translate(-10,-8)" stroke="var(--brass)" stroke-width="1.4" fill="none" stroke-linecap="round"><path d="M1 8h7M8 4a4 4 0 0 1 0 8M13 5v6M15.5 5v6"/></g></g>
+        </g>
+      </svg>
+    </div>
 
-let chartCum=null,chartBonus=null;
-const vlines={id:'vlines',afterDraw(c,a,o){const L=o.lines||[];const{ctx,chartArea:{top,bottom},scales:{x}}=c;L.forEach(l=>{const px=x.getPixelForValue(l.t);if(px<x.left||px>x.right)return;ctx.save();ctx.beginPath();ctx.moveTo(px,top);ctx.lineTo(px,bottom);ctx.lineWidth=1.3;ctx.setLineDash([4,3]);ctx.strokeStyle=l.color;ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=l.color;ctx.font='10px "Trebuchet MS",sans-serif';ctx.textAlign='center';ctx.fillText(l.label,px,top+9);ctx.restore();});}};
-Chart.register(vlines);
+    <div class="families read">
+      <div class="family perc">
+        <div class="fhead">
+          <span class="glyph" style="color:var(--perc)"><svg width="34" height="28" viewBox="0 0 20 16"><ellipse cx="10" cy="5" rx="7" ry="2.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3 5v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></span>
+          <span class="fname">Percussion</span><span class="frole">drum · burst</span>
+        </div>
+        <p><strong>Front&#8209;loaded.</strong> Resonance ramps hyperbolically — quick to most of its value — and the drum adds a small <strong>pulse on every refresh</strong>. The tool for short, sharp windows where you want the payoff <em>now</em>.</p>
+        <div class="stats"><span class="stat">attune <b>15%</b></span><span class="stat">resonance <b>25%</b></span><span class="stat">pulse <b>+5%/refresh</b></span></div>
+      </div>
 
-// instrument glyphs (simple outlines)
-const GLYPH={
-  Brass:'<svg width="20" height="16" viewBox="0 0 20 16"><path d="M2 8h7M9 4a4 4 0 0 1 0 8M14 5v6M16.5 5v6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
-  Percussion:'<svg width="20" height="16" viewBox="0 0 20 16"><ellipse cx="10" cy="5" rx="7" ry="2.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3 5v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>',
-  Wind:'<svg width="20" height="16" viewBox="0 0 20 16"><path d="M3 8h14M6 8v-.5M9 8v-.5M12 8v-.5M15 8v-.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
-  String:'<svg width="20" height="16" viewBox="0 0 20 16"><ellipse cx="8" cy="9" rx="5" ry="5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M11.5 6.5 17 2M13 5l2 .5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
-  None:'<svg width="20" height="16" viewBox="0 0 20 16"><path d="M6 4v7a2.5 2.5 0 1 1-1.5-2.3V4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>',
-};
+      <div class="family wind">
+        <div class="fhead">
+          <span class="glyph" style="color:var(--wind)"><svg width="34" height="28" viewBox="0 0 20 16"><path d="M3 8h14M6 8v-.5M9 8v-.5M12 8v-.5M15 8v-.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+          <span class="fname">Wind</span><span class="frole">breadth · speed</span>
+        </div>
+        <p><strong>Breadth through speed.</strong> Wind casts <em>faster</em> as Attunement builds — the cadence shrinks with your attunement. Tuned so that, fully attuned, it buys exactly <strong>one more held song</strong> than the baseline. A wind bard twists a wider rotation without dropping anything.</p>
+        <div class="stats"><span class="stat">attune <b>15%</b></span><span class="stat">resonance <b>25%</b></span><span class="stat">cadence <b>3s &times; (1 − attune)</b></span></div>
+      </div>
 
-function drawGantt(res, P){
-  const svg=document.getElementById('gantt');
-  const W=svg.clientWidth||760;
-  const rows=res.uniq;
-  const rowH=22, padT=18, padB=8, padL=4, padR=4;
-  const H=padT+rows.length*rowH+padB;
-  svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('height',H);
-  const win=state.win; const x=s=>padL+(s/win)*(W-padL-padR);
-  let s='';
-  // heartbeat gridlines
-  for(let h=0;h<=win;h+=6){ const px=x(h); s+=`<line x1="${px}" y1="${padT-6}" x2="${px}" y2="${H-padB}" stroke="rgba(201,162,74,.18)" stroke-width="1"/>`; if(h%12===0)s+=`<text x="${px+2}" y="${padT-8}" fill="var(--faint)" font-size="9" font-family="Trebuchet MS">${h}s</text>`; }
-  rows.forEach((name,ri)=>{
-    const y=padT+ri*rowH+2; const col=TYPE_COLOR[SONGS[name].type]||'#888';
-    s+=`<text x="${padL}" y="${y+13}" fill="var(--muted)" font-size="10" font-family="Trebuchet MS">${name.replace(/ \(.*\)/,'')}</text>`;
-    res.apps[name].forEach((a,ai)=>{
-      const x1=x(a.time), x2=x(Math.min(a.end,win)); const w=Math.max(2,x2-x1);
-      const op=0.35+0.55*Math.min(1,a.bonus/ (P.rCap/100||0.35)); // brighter = higher resonance
-      s+=`<rect x="${x1}" y="${y+5}" width="${w}" height="${rowH-12}" rx="2" fill="${col}" fill-opacity="${op.toFixed(2)}" stroke="${col}" stroke-width="0.6"
-            data-song="${name}" data-t="${a.time.toFixed(1)}" data-stack="${a.stack}" data-bonus="${(a.bonus*100).toFixed(1)}" data-val="${a.value.toFixed(1)}" data-type="${SONGS[name].type}" class="gbar"/>`;
-      // cast tick
-      s+=`<line x1="${x1}" y1="${y+2}" x2="${x1}" y2="${y+rowH-4}" stroke="${col}" stroke-width="1.1"/>`;
-    });
-  });
-  svg.innerHTML=s;
-  // hover
-  const tip=document.getElementById('tooltip');
-  svg.querySelectorAll('.gbar').forEach(r=>{
-    r.addEventListener('mousemove',e=>{
-      const d=r.dataset; const unit=d.type==='damage'?'dmg':d.type==='health'?'heal':d.type==='mana'?'mana':'value';
-      tip.innerHTML=`<div class="ti">${d.song}</div>
-        <div class="tr">cast at <b>${d.t}s</b></div>
-        <div class="tr">resonance stack <b>${d.stack}</b></div>
-        <div class="tr">bonus <b>${d.bonus}%</b></div>
-        <div class="tr">next tick <b>${d.val} ${unit}</b></div>`;
-      tip.style.display='block'; tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY+14)+'px';
-    });
-    r.addEventListener('mouseleave',()=>{tip.style.display='none';});
-  });
-}
+      <div class="family string">
+        <div class="fhead">
+          <span class="glyph" style="color:var(--string)"><svg width="34" height="28" viewBox="0 0 20 16"><ellipse cx="8" cy="9" rx="5" ry="5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M11.5 6.5 17 2M13 5l2 .5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+          <span class="fname">String</span><span class="frole">breadth · uptime</span>
+        </div>
+        <p><strong>Breadth through duration.</strong> String songs <em>last longer</em> as Attunement builds. Also tuned for <strong>one more held song</strong> at full attunement — and the longer duration means each effect reaches further across the heartbeat, which is what you want for multi&#8209;target coverage.</p>
+        <div class="stats"><span class="stat">attune <b>17%</b></span><span class="stat">resonance <b>25%</b></span><span class="stat">duration <b>18s &times; (1 + attune)</b></span></div>
+      </div>
 
-function render(){
-  document.getElementById('lvlVal').textContent=state.lvl;
-  document.getElementById('winVal').textContent=state.win+'s';
-  document.getElementById('winEcho').textContent=state.win;
-  document.getElementById('saVal').textContent=state.startAttune>=100?'max':state.startAttune+'%';
-  document.getElementById('ganttInstName').textContent=state.ganttInst;
-  Object.keys(INST).forEach(n=>{const el=document.getElementById('holds-'+n);if(el){const ms=maxSongsAtCap(INST[n]);el.textContent='holds ~'+ms+' song'+(ms===1?'':'s')+' at full attune';}});
-  const cfg={lvl:state.lvl,win:state.win,startAttune:state.startAttune,songs:state.songs};
-  const results={};Object.keys(INST).forEach(n=>results[n]=simulate(INST[n],cfg));
-  const ref=results.Brass;
+      <div class="family brass">
+        <div class="fhead">
+          <span class="glyph" style="color:var(--brass)"><svg width="34" height="28" viewBox="0 0 20 16"><path d="M2 8h7M9 4a4 4 0 0 1 0 8M14 5v6M16.5 5v6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+          <span class="fname">Brass</span><span class="frole">horn · commitment</span>
+        </div>
+        <p><strong>Depth and commitment.</strong> Brass advances Resonance a <strong>constant amount every cast</strong> rather than front&#8209;loading, with a kick on the very first cast and the <em>highest caps</em> of any family. Deliberately the slow burn: it overtakes the front&#8209;loaded families only if you stay committed. Its magnitude is meant for <em>single&#8209;effect</em> songs.</p>
+        <div class="stats"><span class="stat">attune <b>20%</b></span><span class="stat">resonance <b>35%</b></span><span class="stat">advance <b>+3%/cast</b></span></div>
+      </div>
+    </div>
 
-  const tag=document.getElementById('modeTag');
-  const nUniq=[...new Set(state.songs.filter(Boolean))].length;
-  tag.textContent=ref.dedicating?'dedication':(nUniq>1?nUniq+'-song twist':'idle');
-  tag.className='pill '+(ref.dedicating?'ded':'twist');
+    <div class="baseline read">
+      <span class="glyph"><svg width="28" height="22" viewBox="0 0 20 16"><path d="M6 4v7a2.5 2.5 0 1 1-1.5-2.3V4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span>
+      <span><strong style="color:var(--parch)">No instrument — singing only.</strong> The baseline: no Resonance, just the bard's voice. Everything above is the upside of actually playing an instrument.</span>
+    </div>
+  </div>
+</section>
 
-  const leg=document.getElementById('legend1');
-  leg.innerHTML=Object.keys(INST).map(n=>`<span class="${INST[n].on?'':'off'}" data-leg="${n}"><i style="background:${INST[n].color}"></i>${n}</span>`).join('');
-  leg.querySelectorAll('[data-leg]').forEach(el=>el.addEventListener('click',()=>{INST[el.dataset.leg].on=!INST[el.dataset.leg].on;buildInstConfig();render();}));
+<!-- WHY BRASS ON SINGLE EFFECTS -->
+<section class="section">
+  <div class="wrap read">
+    <div class="eyebrow">05 — A finding from the math</div>
+    <h2>Why Brass lives on single effects, not twisted DoTs</h2>
+    <p>Running the numbers settles an old question. A <strong>five&#8209;DoT twist always out&#8209;damages a single sustained DoT</strong> on one target — it isn't close. Even a heavily&#8209;stacked single damage song reaches only a fraction of what the twist delivers, and bringing them to parity would need a bonus so large it would break everything else.</p>
+    <p>So single&#8209;DoT "dedication" is <em>intentionally</em> not a single&#8209;target DPS path — and that's fine, because it frees Brass's big magnitude to point at the things that are single&#8209;effect by nature: a <strong>heal</strong>, a <strong>charm</strong>, a <strong>hate</strong> or <strong>buff serenade</strong> on one target. Committing to one song and ramping it hard <em>is</em> the payoff, on the songs where ramping one thing is the whole point.</p>
+  </div>
+</section>
 
-  const m=state.metric;const labels=ref.pts.map(p=>p.t);
-  const datasets=Object.keys(INST).filter(n=>INST[n].on).map(n=>({label:n,data:results[n].pts.map(p=>p[m]),borderColor:INST[n].color,backgroundColor:INST[n].color,borderWidth:n==='None'?1.6:2.4,borderDash:n==='None'?[3,3]:[],tension:.18,pointRadius:0,pointHoverRadius:4,fill:false}));
-  const breakLines=ref.events.filter(e=>e.kind==='break').map(e=>({t:e.t,color:'#d2473f',label:'break'}));
-  const cumOpts={responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>i[0].label+'s',label:c=>`${c.dataset.label}: ${fmt(c.parsed.y)}`}},vlines:{lines:breakLines}},scales:{x:{title:{display:true,text:'seconds',color:'#a99a86'},ticks:{color:'#a99a86'},grid:{color:'rgba(128,116,96,.13)'}},y:{title:{display:true,text:m==='cum'?'cumulative units':'cumulative '+m,color:'#a99a86'},min:0,ticks:{color:'#a99a86'},grid:{color:'rgba(128,116,96,.13)'}}}};
-  if(chartCum){chartCum.data={labels,datasets};chartCum.options=cumOpts;chartCum.update();}else chartCum=new Chart(document.getElementById('chartCum'),{type:'line',data:{labels,datasets},options:cumOpts});
+<!-- HYPERBOLIC SCALING -->
+<section class="section">
+  <div class="wrap read">
+    <div class="eyebrow">06 — The safety rail</div>
+    <h2>Hyperbolic scaling — why the Bard doesn't blow up</h2>
+    <p>Every bonus here rides a diminishing&#8209;returns curve of the same shape: <span class="mono" style="color:var(--gold)">value / (k + value)</span>. The first stacks are strong, each additional stack is worth a little less, and the total <em>asymptotes</em> to a ceiling it can never cross.</p>
+    <div class="spec">
+<span class="c"># diminishing returns — same shape everywhere</span>
+effective = value / (k + value)        <span class="c"># approaches 1, never reaches it</span>
+<span class="c"># same-type effects add inside a bracket; brackets then scale</span>
+    </div>
+    <p>Same&#8209;type effects add together inside a shared bracket, and the bracket scales the value — so two sources of the same bonus don't multiply into something absurd. That's the point: we can hand the bard a deep stack of knobs precisely <em>because</em> the output is bounded by construction. The depth doesn't become raw power; it becomes choice.</p>
+  </div>
+</section>
 
-  // gantt
-  drawGantt(results[state.ganttInst], INST[state.ganttInst]);
-  document.getElementById('glyphs').innerHTML=Object.keys(GLYPH).map(n=>`<span class="glyph" style="color:${INST[n].color}">${GLYPH[n]}<span style="color:var(--muted)">${n}</span></span>`).join('');
+<!-- DECISIONS -->
+<section class="section">
+  <div class="wrap read">
+    <div class="eyebrow">07 — The point of all of it</div>
+    <h2>The decisions this creates</h2>
+    <p>Every system above exists to put a choice in front of the bard. A few of the ones that emerge:</p>
+    <div class="decisions">
+      <div class="decision">
+        <span class="tag">Foresight</span>
+        <h4>Ramp the heal</h4>
+        <p>Read the incoming damage, start the healing hymn <strong>early</strong>, and hold it so its Resonance is near cap by the time the tank actually gets hit — trading a few seconds of anticipation for a much larger heal at the moment it counts.</p>
+      </div>
+      <div class="decision">
+        <span class="tag">Commitment</span>
+        <h4>Serenade a target</h4>
+        <p>Pick up Brass, commit to a single charm, buff, or hate song on <strong>one</strong> target, and ramp it hard for outsized single&#8209;effect impact. This is the dedication payoff the damage math deliberately leaves room for.</p>
+      </div>
+      <div class="decision">
+        <span class="tag">Breadth</span>
+        <h4>Twist wide or play tight</h4>
+        <p>Spread across many songs for coverage — Wind and String let you hold <strong>one more</strong> — or twist a tight three for higher Resonance on each. The gradient is yours to slide along.</p>
+      </div>
+      <div class="decision">
+        <span class="tag">Read the fight</span>
+        <h4>Pick the instrument</h4>
+        <p>Drum for a burst window, brass for a long commitment, wind or string for a wide rotation. The instrument in your hand becomes a real, per&#8209;encounter call.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-  // bonus chart
-  const bi=state.bonusInst;const bres=results[bi];const bl=bres.bonusSeries.map(b=>b.t);
-  const bd={type:'line',data:{labels:bl,datasets:[{label:'total bonus',data:bres.bonusSeries.map(b=>+(b.bonus*100).toFixed(1)),borderColor:INST[bi].color,backgroundColor:INST[bi].color+'22',borderWidth:2.4,tension:.15,pointRadius:0,fill:true},{label:'attunement floor',data:bres.bonusSeries.map(b=>+(b.attune*100).toFixed(1)),borderColor:'#a99a86',borderDash:[5,4],borderWidth:1.6,tension:.15,pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:true,labels:{color:'#a99a86',font:{family:'Trebuchet MS',size:11},boxWidth:12}},tooltip:{callbacks:{title:i=>i[0].label+'s',label:c=>`${c.dataset.label}: ${c.parsed.y}%`}}},scales:{x:{ticks:{color:'#a99a86'},grid:{color:'rgba(128,116,96,.13)'}},y:{title:{display:true,text:'% bonus on tracked song',color:'#a99a86'},min:0,ticks:{color:'#a99a86',callback:v=>v+'%'},grid:{color:'rgba(128,116,96,.13)'}}}}};
-  if(chartBonus){chartBonus.data=bd.data;chartBonus.options=bd.options;chartBonus.update();}else chartBonus=new Chart(document.getElementById('chartBonus'),bd);
+<!-- MODEL -->
+<section class="section">
+  <div class="wrap read">
+    <div class="eyebrow">08 — See it move</div>
+    <div class="modelcard">
+      <h2>The interactive model</h2>
+      <p style="margin-bottom:18px">Numbers on a page only go so far, so this all comes with a live model you can poke at. Build a rotation, set a level and a fight length, dial each instrument's caps, and watch it play out.</p>
+      <ul>
+        <li><strong>Cumulative delivery</strong> for all instruments at once — damage, healing, mana, or combined.</li>
+        <li>A <strong>cast timeline</strong> showing exactly when each song is held, when it drops, and how bright its Resonance is — hover any bar for its next&#8209;tick value.</li>
+        <li>A <strong>per&#8209;song bonus</strong> curve with the Attunement floor drawn underneath.</li>
+        <li>A <strong>starting&#8209;attunement</strong> slider, to model an already&#8209;warmed&#8209;up fight instead of a cold open.</li>
+      </ul>
+      <p style="margin-bottom:24px">Try a <strong>seven&#8209;song twist</strong>: most instruments sawtooth as songs fall off and reset, while wind and string hold the line once attuned. That single picture is the whole breadth&#8209;versus&#8209;depth argument.</p>
+      <a class="btn solid" href="./bard-song-modeler.html">Open the interactive model →</a>
+    </div>
+  </div>
+</section>
 
-  // table
-  const types=[['damage','Damage'],['health','Healing'],['mana','Mana']];
-  const present=types.filter(([k])=>ref.totals[k]>0);
-  let head='<tr><th>Instrument</th><th>Total</th>'+present.map(([,l])=>`<th>${l}</th>`).join('')+'<th>Drops</th></tr>';
-  let body=Object.keys(INST).map(n=>{const T=results[n].totals;const drops=results[n].events.filter(e=>e.kind==='drop').length;return `<tr><td><span class="sw" style="background:${INST[n].color}"></span>${n}${INST[n].on?'':' <span style="color:var(--faint);font-weight:400">(hidden)</span>'}</td><td>${fmt(T.cum)}</td>`+present.map(([k])=>`<td>${fmt(T[k])}</td>`).join('')+`<td>${drops}</td></tr>`;}).join('');
-  document.getElementById('cmpTable').innerHTML=head+body;
+<!-- INVITATION -->
+<section class="section">
+  <div class="wrap read">
+    <div class="eyebrow">09 — Over to you</div>
+    <h2>Open questions &amp; an invitation</h2>
+    <p class="first">This is a lot of machinery, and it may genuinely be more than the class wants to carry — that's a fair critique and I'd rather hear it than not. But the depth of choice is, to me, exactly what would make this bard a joy to play, and the hyperbolic scaling is the rail that keeps that depth from turning into raw power.</p>
+    <p>Suggestions, holes, and "you've overcomplicated this" are all welcome. Read the plan, open the model, break it, and tell me where it's wrong.</p>
+  </div>
+</section>
 
-  // events (use selected gantt instrument's events so drops match)
-  const gres=results[state.ganttInst];
-  const order={start:0,drop:1,break:1,end:2};
-  const evs=[...gres.events].sort((a,b)=>a.t-b.t||order[a.kind]-order[b.kind]);
-  const lab={start:'begins',drop:'DROPS (resonance resets)',break:'CHARM BREAKS',end:'ends'};
-  document.getElementById('events').innerHTML=evs.slice(0,60).map(e=>`<div class="ev ${e.kind}"><span class="pip"></span><span class="t">${e.t}s</span><span>${e.song} — ${lab[e.kind]}</span></div>`).join('');
+</main>
 
-  ['bonusInst','ganttInst'].forEach(id=>{const s=document.getElementById(id);if(s.options.length===0){s.innerHTML=Object.keys(INST).map(n=>`<option value="${n}">${n}</option>`).join('');s.value=state[id];}});
+<footer>
+  <div class="wrap read">
+    <p class="mono">Bard instrument redesign · Attunement &amp; Resonance · a community concept for Monsters &amp; Memories</p>
+    <p>Not affiliated with the M&amp;M team — a player proposal, offered for discussion.</p>
+  </div>
+</footer>
 
-  document.getElementById('modelNote').innerHTML=`<b style="color:var(--gold)">Attunement</b> rises with every cast (any song) toward each instrument's cap (dashed floor), and now drives Wind's cast speed and String's duration. <b style="color:var(--gold)">Resonance</b> builds per song while held and <b>resets when a song drops</b>. At 3s cadence a 7-song rotation cycles every 21s but songs only last 18s — most instruments drop and reset; Wind (faster casts) and String (longer duration) close the gap once attunement is high. Set starting attunement to max to skip the warm-up. Bar brightness in the timeline tracks resonance; hover for the next tick's value.`;
-}
-
-document.getElementById('lvl').addEventListener('input',e=>{state.lvl=+e.target.value;render();});
-document.getElementById('win').addEventListener('input',e=>{state.win=+e.target.value;render();});
-document.getElementById('sa').addEventListener('input',e=>{state.startAttune=+e.target.value;render();});
-document.querySelectorAll('#metricSeg button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#metricSeg button').forEach(x=>x.classList.remove('on'));b.classList.add('on');state.metric=b.dataset.m;render();}));
-document.getElementById('bonusInst').addEventListener('change',e=>{state.bonusInst=e.target.value;render();});
-document.getElementById('ganttInst').addEventListener('change',e=>{state.ganttInst=e.target.value;render();});
-window.addEventListener('resize',()=>{clearTimeout(window._rz);window._rz=setTimeout(render,150);});
-buildSlots();buildInstConfig();render();
-</script>
 </body>
 </html>
+
